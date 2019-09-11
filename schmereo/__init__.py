@@ -1,9 +1,8 @@
 import sys
 import traceback
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import QtGui, QtWidgets, uic
 
 
-sys._excepthook = sys.excepthook
 def exception_hook(exctype, value, traceback):
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
@@ -16,7 +15,16 @@ class SchmereoApp(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
+    sys._excepthook = sys.excepthook
     sys.excepthook = exception_hook
+
+    gl_format = QtGui.QSurfaceFormat()
+    gl_format.setMajorVersion(4)
+    gl_format.setMinorVersion(6)
+    gl_format.setProfile(QtGui.QSurfaceFormat.CoreProfile)
+    gl_format.setSamples(4)
+    QtGui.QSurfaceFormat.setDefaultFormat(gl_format);
+
     app = QtWidgets.QApplication(sys.argv)
     main_win = SchmereoApp()
     main_win.show()
