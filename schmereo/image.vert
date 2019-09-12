@@ -9,8 +9,8 @@ const vec4 SCREEN_QUAD[4] = vec4[4](
     vec4(-s, -s, 0.5, 1),
     vec4(-s,  s, 0.5, 1)
 );
-const float t = 0.5;
-const vec2 TEX_COORD[4] = vec2[4](
+const float t = 1.0;
+const vec2 CANVAS_COORD[4] = vec2[4](
     vec2( t,  t),
     vec2( t, -t),
     vec2(-t,  t),
@@ -23,9 +23,9 @@ const vec2 TEX_COORD[4] = vec2[4](
 // home position:
 //   center of image is at origin
 //   origin is at center of screen
-out noperspective vec2 texCoord;
+out noperspective vec2 canvasCoord;
 
 void main() {
     gl_Position = SCREEN_QUAD[gl_VertexID];
-    texCoord = TEX_COORD[gl_VertexID] * vec2(1, windowAspect);
+    canvasCoord = CANVAS_COORD[gl_VertexID] * vec2(1, windowAspect);
 }

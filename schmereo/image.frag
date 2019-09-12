@@ -1,10 +1,10 @@
 #version 460
 
 uniform sampler2D image;
-uniform vec2 image_center = vec2(0.5, 0.5);
+uniform vec2 image_center = vec2(0);
 uniform float zoom = 1.0;
 
-in noperspective vec2 texCoord;
+in noperspective vec2 canvasCoord;
 out vec4 frag_color;
 
 const vec4 bg_color = vec4(vec3(0.2), 1);
@@ -22,24 +22,21 @@ void main()
     if (tsz.y > 0)
         image_aspect = float(tsz.x) / tsz.y;
 
-    vec2 tc = texCoord;
-    tc *= zoom;
-    vec2 offset = image_center;
-    tc += offset;
+    vec2 imgCoord = canvasCoord;
+    imgCoord.y *= image_aspect;
 
-    vec2 atc = abs(tc);
-    float mtc = max(atc.x, atc.y);
+    vec2 texCoord = 0.5 * (imgCoord + vec2(1));
 
-    tc *= vec2(1, image_aspect);
+    float mtc = max(abs(imgCoord.x), abs(imgCoord.y));
 
-    if (mtc > 1)
+    if (mtc >= 1.0)
     {
         // gray background
         frag_color = bg_color;
     }
     else
     {
-        // frag_color = vec4(tc, 0.5, 1);
-        frag_color = texture(image, tc);
+        // frag_color = vec4(texCoord, 0.5, 1);
+        frag_color = texture(image, texCoord);
     }
 }
