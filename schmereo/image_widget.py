@@ -1,5 +1,7 @@
 import inspect
+import pkg_resources
 
+import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 from PIL import Image
@@ -12,6 +14,10 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.vao = None
         self.shader = None
         self.texture = None
+        self.image = None
+        self.image_needs_upload = False
+        self.aspect = 1.0
+        self.aspect_location = 0
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
@@ -23,53 +29,50 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         md = event.mimeData()
         if md.hasUrls():
             for url in md.urls():
-                img = Image.open(url.toLocalFile())
-                print(img)
+                self.image = Image.open(url.toLocalFile())
+                self.image_needs_upload = True
+                print(self.image)
+                self.update()
 
     def initializeGL(self) -> None:
         self.vao = GL.glGenVertexArrays(1)
         self.shader = compileProgram(
-            compileShader(inspect.cleandoc('''
-                #version 460
-                
-                const float s = 0.4;
-                const vec4 SCREEN_QUAD[4] = vec4[4](
-                    vec4( s, -s, 0.5, 1),
-                    vec4( s,  s, 0.5, 1),
-                    vec4(-s, -s, 0.5, 1),
-                    vec4(-s,  s, 0.5, 1)
-                );
-                const vec2 TEX_COORD[4] = vec2[4](
-                    vec2(1, 0),
-                    vec2(1, 1),
-                    vec2(0, 0),
-                    vec2(0, 1)
-                );
-                
-                out noperspective vec2 texCoord;
-                
-                void main() {
-                    gl_Position = SCREEN_QUAD[gl_VertexID];
-                    texCoord = TEX_COORD[gl_VertexID];
-                }
-            '''), GL.GL_VERTEX_SHADER),
-            compileShader(inspect.cleandoc('''
-                #version 460
-                
-                in noperspective vec2 texCoord;
-                out vec4 frag_color;
-                
-                void main() {
-                    frag_color = vec4(texCoord, 0.5, 1);
-                }
-            '''), GL.GL_FRAGMENT_SHADER),
+            compileShader(
+                pkg_resources.resource_string(__name__, 'image.vert'),
+                GL.GL_VERTEX_SHADER),
+            compileShader(
+                pkg_resources.resource_string(__name__, 'image.frag'),
+                GL.GL_FRAGMENT_SHADER),
         )
         self.texture = GL.glGenTextures(1)
 
     def paintGL(self) -> None:
         GL.glBindVertexArray(self.vao)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+        if self.image_needs_upload:
+            GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+            GL.glTexImage2D(
+                GL.GL_TEXTURE_2D,
+                0,
+                GL.GL_RGB,
+                self.image.width,
+                self.image.height,
+                0,
+                GL.GL_RGB,
+                GL.GL_UNSIGNED_BYTE,
+                numpy.array(list(self.image.getdata()), dtype=numpy.ubyte),
+            )
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+            GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
+            self.image_needs_upload = False
         GL.glUseProgram(self.shader)
+        GL.glUniform1f(self.aspect_location, self.aspect)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
 
     def resizeGL(self, width: int, height: int) -> None:
-        pass
+        self.aspect = height/width
+        print(self.aspect)
+
