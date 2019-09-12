@@ -2,8 +2,9 @@
 
 layout(location = 0) uniform float windowAspect = 1.0;
 layout(location = 1) uniform float zoom = 1.0;
+layout(location = 2) uniform vec2 center = vec2(0, 0);
 
-const float s = 0.9;
+const float s = 1.0;
 const vec4 SCREEN_QUAD[4] = vec4[4](
     vec4( s, -s, 0.5, 1),
     vec4( s,  s, 0.5, 1),
@@ -28,5 +29,8 @@ out noperspective vec2 canvasCoord;
 
 void main() {
     gl_Position = SCREEN_QUAD[gl_VertexID];
-    canvasCoord = 1/zoom * CANVAS_COORD[gl_VertexID] * vec2(1, windowAspect);
+    canvasCoord = CANVAS_COORD[gl_VertexID];
+    canvasCoord.y *= windowAspect;
+    canvasCoord *= zoom;
+    canvasCoord += center * zoom;
 }

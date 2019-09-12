@@ -1,4 +1,3 @@
-import inspect
 import pkg_resources
 
 import numpy
@@ -18,8 +17,12 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image_needs_upload = False
         self.aspect = 1.0
         self.zoom = 1.0
+        self.center = numpy.array((0, 0), dtype=numpy.float32)
         self.aspect_location = 0
         self.zoom_location = 1
+        self.center_location = 2
+        self.is_dragging = False
+        self.previous_mouse = None
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
@@ -48,12 +51,34 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         )
         self.texture = GL.glGenTextures(1)
 
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent):
+        if not self.is_dragging:
+            return
+        if self.previous_mouse is not None:
+            dPos = event.pos() - self.previous_mouse
+            dx = 2.0 * dPos.x() / self.width()
+            dy = -2.0 * dPos.y() / self.width()  # yes, width
+            self.center += (-dx, dy)
+            self.update()
+        self.previous_mouse = event.pos()
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        self.is_dragging = True
+        self.previous_mouse = event.pos()
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
+        self.is_dragging = False
+        self.previous_mouse = None
+
     def wheelEvent(self, event: QtGui.QWheelEvent):
         dScale = event.angleDelta().y() / 120.0
         if dScale == 0:
             return
-        dScale = 1.05 ** dScale
+        dc1 = self.zoom * self.center
+        dScale = 1.05 ** -dScale
         self.zoom *= dScale
+        dc2 = self.zoom * self.center
+        self.center += dc1 - dc2  # TODO: this is wrong
         self.update()
 
     def paintGL(self) -> None:
@@ -81,6 +106,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         GL.glUseProgram(self.shader)
         GL.glUniform1f(self.aspect_location, self.aspect)
         GL.glUniform1f(self.zoom_location, self.zoom)
+        GL.glUniform2fv(self.center_location, 1, self.center)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
 
     def resizeGL(self, width: int, height: int) -> None:
