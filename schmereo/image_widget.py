@@ -17,7 +17,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image = None
         self.image_needs_upload = False
         self.aspect = 1.0
+        self.zoom = 1.0
         self.aspect_location = 0
+        self.zoom_location = 1
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
@@ -46,6 +48,14 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         )
         self.texture = GL.glGenTextures(1)
 
+    def wheelEvent(self, event: QtGui.QWheelEvent):
+        dScale = event.angleDelta().y() / 120.0
+        if dScale == 0:
+            return
+        dScale = 1.05 ** dScale
+        self.zoom *= dScale
+        self.update()
+
     def paintGL(self) -> None:
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
@@ -70,9 +80,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.image_needs_upload = False
         GL.glUseProgram(self.shader)
         GL.glUniform1f(self.aspect_location, self.aspect)
+        GL.glUniform1f(self.zoom_location, self.zoom)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect = height/width
-        print(self.aspect)
-

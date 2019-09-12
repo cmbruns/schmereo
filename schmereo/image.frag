@@ -2,7 +2,6 @@
 
 uniform sampler2D image;
 uniform vec2 image_center = vec2(0);
-uniform float zoom = 1.0;
 
 in noperspective vec2 canvasCoord;
 out vec4 frag_color;
@@ -11,11 +10,6 @@ const vec4 bg_color = vec4(vec3(0.2), 1);
 
 void main()
 {
-    // TODO use 2x2 matrix transformations...
-    mat2 scale = mat2(
-        zoom, 0,
-        0, zoom);
-
     // correct for image aspect ratio
     ivec2 tsz = textureSize(image, 0);
     float image_aspect = 1;
