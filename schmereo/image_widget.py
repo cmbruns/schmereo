@@ -7,6 +7,10 @@ from PIL import Image
 from PyQt5 import QtGui, QtWidgets
 
 
+def vec(*args):
+    return numpy.array(args, dtype=numpy.float32)
+
+
 class ImageWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
@@ -74,8 +78,16 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         dScale = event.angleDelta().y() / 120.0
         if dScale == 0:
             return
-        dScale = 1.05 ** -dScale
+        dScale = 1.07 ** -dScale
+        zoom1 = self.zoom
         self.zoom *= dScale
+        zoom2 = self.zoom
+        # Keep location under mouse during zoom
+        window_center = vec(self.width()/2.0, self.height()/2.0)
+        mouse_pos = vec(event.pos().x(), event.pos().y())
+        adjust = 2.0 * (zoom1 - zoom2) * (mouse_pos - window_center) / self.width()  # canvas coords
+        self.center += adjust
+        #
         self.update()
 
     def paintGL(self) -> None:
