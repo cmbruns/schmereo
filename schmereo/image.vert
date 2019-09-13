@@ -31,6 +31,5 @@ void main() {
     gl_Position = SCREEN_QUAD[gl_VertexID];
     canvasCoord = CANVAS_COORD[gl_VertexID];
     canvasCoord.y *= windowAspect;
-    canvasCoord *= zoom;
-    canvasCoord += center * zoom;
+    canvasCoord = center + zoom * canvasCoord;
 }

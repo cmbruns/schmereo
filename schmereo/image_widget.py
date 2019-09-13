@@ -56,8 +56,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         if self.previous_mouse is not None:
             dPos = event.pos() - self.previous_mouse
-            dx = 2.0 * dPos.x() / self.width()
-            dy = -2.0 * dPos.y() / self.width()  # yes, width
+            dx = 2.0 * self.zoom * dPos.x() / self.width()
+            dy = -2.0 * self.zoom * dPos.y() / self.width()  # yes, width
             self.center += (-dx, dy)
             self.update()
         self.previous_mouse = event.pos()
@@ -74,11 +74,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         dScale = event.angleDelta().y() / 120.0
         if dScale == 0:
             return
-        dc1 = self.zoom * self.center
         dScale = 1.05 ** -dScale
         self.zoom *= dScale
-        dc2 = self.zoom * self.center
-        self.center += dc1 - dc2  # TODO: this is wrong
         self.update()
 
     def paintGL(self) -> None:
