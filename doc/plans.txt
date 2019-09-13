@@ -1,0 +1,27 @@
+Roadmap for shmereo
+
+Phase 1:
+  * drag and drop image (DONE)
+  * zoom and pan image (DONE)
+  * add homologous points
+  * update vertical alignment
+  * export two images
+
+Phase 2:
+  * update rotation
+  * update stereo window
+
+Phase 3:
+  * import jps, pns, mpo file formats
+  * cubic interpolation
+  * unlink cameras
+  * choice of smooth vs pixelated
+  * match brightness / contrast
+  * export jps, pns, mpo file formats
+
+Phase 4:
+  * update scale
+  * fix blemishes
+  * sepia/grayscale [defer to gimp?]
+  * border color
+  * view anaglyph, 3D vision, interlaced, cross eye

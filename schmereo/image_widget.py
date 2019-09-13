@@ -29,6 +29,15 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.previous_mouse = None
         self.setAcceptDrops(True)
 
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent):
+        if self.image is None:
+            return
+        menu = QtWidgets.QMenu(self)
+        menu.addAction(QtWidgets.QAction(text='Add marker here', parent=self))
+        menu.addAction(QtWidgets.QAction(text='Split image', parent=self))
+        menu.addAction(QtWidgets.QAction(text='Cancel [ESC]', parent=self))
+        menu.exec(event.globalPos())
+
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         md = event.mimeData()
         if md.hasImage() or md.hasUrls():
