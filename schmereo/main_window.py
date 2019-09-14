@@ -5,6 +5,7 @@ from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 
+from schmereo.camera import Camera
 from schmereo.recent_file import RecentFileList
 
 
@@ -18,6 +19,10 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             settings_key='recent_files',
             menu=self.ui.menuRecent_Files
         )
+        # Link views
+        camera = Camera()
+        self.ui.leftImageWidget.camera = camera
+        self.ui.rightImageWidget.camera = camera
 
     @QtCore.pyqtSlot(str)
     def load_file(self, file_name: str, eye=None) -> bool:
@@ -33,7 +38,6 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             self.log_message(f'ERROR: Image processing failed.')
             return False
         self.log_message(f'Finished processing image {file_name}')
-        print(pixels.shape)
         result = self.ui.leftImageWidget.load_image(file_name, image, pixels)
         if result:
             result = self.ui.rightImageWidget.load_image(file_name, image, pixels)

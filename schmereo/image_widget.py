@@ -12,14 +12,21 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent=None, camera=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
         if camera is None:
-            self.camera = Camera()
-        else:
-            self.camera = camera
-        self.image = SingleImage(camera=self.camera)
+            camera = Camera()
+        self.image = SingleImage(camera=camera)
         self.aspect_ratio = 1.0
         self.is_dragging = False
         self.previous_mouse: Optional[WindowPos] = None
         self.setAcceptDrops(True)
+
+    @property
+    def camera(self):
+        return self.image.camera
+
+    @camera.setter
+    def camera(self, value):
+        self.image.camera = value
+        self.image.camera.changed.connect(self.update)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent):
         if self.image.image is None:
@@ -58,7 +65,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
             dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
             self.camera.center -= dPosC
-            self.update()
+            self.camera.notify()  # update UI now
         self.previous_mouse = WindowPos.from_QPoint(event.pos())
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
@@ -88,7 +95,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         else:
             # zoom centered on widget center
             self.camera.zoom *= dScale
-        self.update()
+        self.camera.notify()
 
     def paintGL(self) -> None:
         self.image.paintGL(self.aspect_ratio)
