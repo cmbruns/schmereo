@@ -48,6 +48,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         super().initializeGL()
         self.image.initializeGL()
 
+    def load_image(self, file_name, image, pixels) -> bool:
+        return self.image.load_image(file_name, image, pixels)
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if not self.is_dragging:
             return

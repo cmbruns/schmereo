@@ -18,6 +18,8 @@ class SingleImage(object):
         self.aspect_location = 0
         self.zoom_location = 1
         self.center_location = 2
+        self.file_name = None
+        self.pixels = None
 
     def initializeGL(self) -> None:
         self.vao = GL.glGenVertexArrays(1)
@@ -31,8 +33,17 @@ class SingleImage(object):
         )
         self.texture = GL.glGenTextures(1)
 
+    def load_image(self, file_name, image, pixels) -> bool:
+        if file_name == self.file_name:
+            return True
+        self.file_name = file_name
+        self.pixels = pixels
+        self.image = image
+        self.image_needs_upload = True
+        return True
+
     def paintGL(self, aspect_ratio) -> None:
-        if self.image is None:
+        if self.pixels is None:
             return
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
@@ -41,13 +52,13 @@ class SingleImage(object):
             GL.glTexImage2D(
                 GL.GL_TEXTURE_2D,
                 0,
-                GL.GL_RGB,
+                GL.GL_RGBA,
                 self.image.width,
                 self.image.height,
                 0,
-                GL.GL_RGB,
+                GL.GL_RGBA,
                 GL.GL_UNSIGNED_BYTE,
-                numpy.array(list(self.image.getdata()), dtype=numpy.ubyte),
+                self.pixels,
             )
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)

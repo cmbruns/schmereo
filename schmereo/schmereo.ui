@@ -25,7 +25,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="ImageWidget" name="openGLWidget"/>
+        <widget class="ImageWidget" name="leftImageWidget"/>
        </item>
       </layout>
      </widget>
@@ -40,7 +40,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="ImageWidget" name="openGLWidget_2"/>
+        <widget class="ImageWidget" name="rightImageWidget"/>
        </item>
       </layout>
      </widget>
@@ -60,7 +60,13 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Files">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -99,6 +105,11 @@
   <action name="actionOpen">
    <property name="text">
     <string>Open...</string>
+   </property>
+  </action>
+  <action name="actionSome_File">
+   <property name="text">
+    <string>Some File</string>
    </property>
   </action>
  </widget>
