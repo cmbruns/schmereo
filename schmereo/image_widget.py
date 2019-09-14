@@ -4,7 +4,7 @@ from PIL import Image
 from PyQt5 import QtGui, QtWidgets
 
 from schmereo import Camera
-from schmereo.coord_sys import WindowPos
+from schmereo.coord_sys import WindowPos, CanvasPos
 from schmereo.image import SingleImage
 
 
@@ -38,7 +38,6 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             for url in md.urls():
                 self.image.image = Image.open(url.toLocalFile())
                 self.image.image_needs_upload = True
-                print(self.image.image)
                 self.update()
 
     def initializeGL(self) -> None:
@@ -49,10 +48,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         if self.previous_mouse is not None:
             print(self.previous_mouse)
-            dPos = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
-            dx = 2.0 * self.camera.zoom * dPos.x / self.width()
-            dy = -2.0 * self.camera.zoom * dPos.y / self.width()  # yes, width
-            self.camera.center += (-dx, dy)
+            dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
+            dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
+            self.camera.center -= dPosC
             self.update()
         self.previous_mouse = WindowPos.from_QPoint(event.pos())
 
@@ -69,16 +67,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if dScale == 0:
             return
         dScale = 1.07 ** -dScale
-        zoom1 = self.camera.zoom
-        self.camera.zoom *= dScale
-        zoom2 = self.camera.zoom
         # Keep location under mouse during zoom
-        window_center = WindowPos(self.width()/2.0, self.height()/2.0)
-        mouse_pos = WindowPos.from_QPoint(event.pos())
-        # TODO: remove ._pos and make canvas frame semantic
-        adjust = 2.0 * (zoom1 - zoom2) * (mouse_pos._pos - window_center._pos) / self.width()  # canvas coords
-        self.camera.center += adjust
-        #
+        bKeepLocation = True
+        if bKeepLocation:
+            # zoom centered on current mouse pointer location
+            window_center = WindowPos(self.width()/2.0, self.height()/2.0)
+            mouse_pos = WindowPos.from_QPoint(event.pos())
+            rel_posW = mouse_pos - window_center
+            start_posC = CanvasPos.from_WindowPos(rel_posW, self.camera, self.size())
+            self.camera.zoom *= dScale
+            end_posC = CanvasPos.from_WindowPos(rel_posW, self.camera, self.size())
+            self.camera.center += (start_posC - end_posC)
+        else:
+            # zoom centered on widget center
+            self.camera.zoom *= dScale
         self.update()
 
     def paintGL(self) -> None:

@@ -32,6 +32,8 @@ class SingleImage(object):
         self.texture = GL.glGenTextures(1)
 
     def paintGL(self) -> None:
+        if self.image is None:
+            return
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         if self.image_needs_upload:
@@ -56,5 +58,5 @@ class SingleImage(object):
         GL.glUseProgram(self.shader)
         GL.glUniform1f(self.aspect_location, self.camera.aspect)
         GL.glUniform1f(self.zoom_location, self.camera.zoom)
-        GL.glUniform2fv(self.center_location, 1, self.camera.center)
+        GL.glUniform2fv(self.center_location, 1, self.camera.center.bytes)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)

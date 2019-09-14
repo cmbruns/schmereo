@@ -1,0 +1,2 @@
+
+Debug dragging non-image files
