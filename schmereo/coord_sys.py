@@ -58,6 +58,7 @@ class WindowPos(PosBase):
     Frame is QWidget relative.
     X increases to the right.
     Y increases down.
+    Origin is at center of widget window.
     """
     @classmethod
     def from_QPoint(cls, qpoint: QtCore.QPoint) -> 'WindowPos':
@@ -67,12 +68,16 @@ class WindowPos(PosBase):
 class CanvasPos(PosBase):
     """
     Frame is virtual canvas underneath the image widget.
-    Units are left image width / 2.
+    One unit equals half of left image width.
     X increases to the right.
-    Y increases up.
+    Y increases down.
+    Origin is at center of untransformed image.
     """
     @classmethod
     def from_WindowPos(cls, pos: WindowPos, camera: 'schmereo.Camera', size: QtCore.QSize) -> 'CanvasPos':
+        """
+        Note: no origin offset is applied. This is method scales relative positions only.
+        """
         x = 2.0 * camera.zoom * pos.x / size.width()
         y = 2.0 * camera.zoom * pos.y / size.width()  # yes, width
         return CanvasPos(x=x, y=y)

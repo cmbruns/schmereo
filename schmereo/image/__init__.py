@@ -4,7 +4,7 @@ import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
-from schmereo import Camera
+from schmereo.camera import Camera
 
 
 class SingleImage(object):
@@ -31,7 +31,7 @@ class SingleImage(object):
         )
         self.texture = GL.glGenTextures(1)
 
-    def paintGL(self) -> None:
+    def paintGL(self, aspect_ratio) -> None:
         if self.image is None:
             return
         GL.glBindVertexArray(self.vao)
@@ -56,7 +56,7 @@ class SingleImage(object):
             GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
             self.image_needs_upload = False
         GL.glUseProgram(self.shader)
-        GL.glUniform1f(self.aspect_location, self.camera.aspect)
+        GL.glUniform1f(self.aspect_location, aspect_ratio)
         GL.glUniform1f(self.zoom_location, self.camera.zoom)
         GL.glUniform2fv(self.center_location, 1, self.camera.center.bytes)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)

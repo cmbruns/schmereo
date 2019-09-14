@@ -3,16 +3,20 @@ from typing import Optional
 from PIL import Image
 from PyQt5 import QtGui, QtWidgets
 
-from schmereo import Camera
+from schmereo.camera import Camera
 from schmereo.coord_sys import WindowPos, CanvasPos
 from schmereo.image import SingleImage
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
-    def __init__(self, parent=None, *args, **kwargs):
+    def __init__(self, parent=None, camera=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
-        self.camera = Camera()
+        if camera is None:
+            self.camera = Camera()
+        else:
+            self.camera = camera
         self.image = SingleImage(camera=self.camera)
+        self.aspect_ratio = 1.0
         self.is_dragging = False
         self.previous_mouse: Optional[WindowPos] = None
         self.setAcceptDrops(True)
@@ -41,13 +45,13 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
                 self.update()
 
     def initializeGL(self) -> None:
+        super().initializeGL()
         self.image.initializeGL()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if not self.is_dragging:
             return
         if self.previous_mouse is not None:
-            print(self.previous_mouse)
             dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
             dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
             self.camera.center -= dPosC
@@ -66,7 +70,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         dScale = event.angleDelta().y() / 120.0
         if dScale == 0:
             return
-        dScale = 1.07 ** -dScale
+        dScale = 1.10 ** -dScale
         # Keep location under mouse during zoom
         bKeepLocation = True
         if bKeepLocation:
@@ -84,7 +88,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.update()
 
     def paintGL(self) -> None:
-        self.image.paintGL()
+        self.image.paintGL(self.aspect_ratio)
 
     def resizeGL(self, width: int, height: int) -> None:
-        self.camera.aspect = height/width
+        self.aspect_ratio = height/width
