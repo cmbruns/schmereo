@@ -1,37 +1,26 @@
-import pkg_resources
+from typing import Optional
 
-import numpy
-from OpenGL import GL
-from OpenGL.GL.shaders import compileShader, compileProgram
 from PIL import Image
 from PyQt5 import QtGui, QtWidgets
 
-
-def vec(*args):
-    return numpy.array(args, dtype=numpy.float32)
+from schmereo import Camera
+from schmereo.coord_sys import WindowPos
+from schmereo.image import SingleImage
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
-        self.vao = None
-        self.shader = None
-        self.texture = None
-        self.image = None
-        self.image_needs_upload = False
-        self.aspect = 1.0
-        self.zoom = 1.0
-        self.center = numpy.array((0, 0), dtype=numpy.float32)
-        self.aspect_location = 0
-        self.zoom_location = 1
-        self.center_location = 2
+        self.camera = Camera()
+        self.image = SingleImage(camera=self.camera)
         self.is_dragging = False
-        self.previous_mouse = None
+        self.previous_mouse: Optional[WindowPos] = None
         self.setAcceptDrops(True)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent):
-        if self.image is None:
+        if self.image.image is None:
             return
+        mouse_pos = WindowPos.from_QPoint(event.pos())
         menu = QtWidgets.QMenu(self)
         menu.addAction(QtWidgets.QAction(text='Add marker here', parent=self))
         menu.addAction(QtWidgets.QAction(text='Split image', parent=self))
@@ -47,37 +36,29 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         md = event.mimeData()
         if md.hasUrls():
             for url in md.urls():
-                self.image = Image.open(url.toLocalFile())
-                self.image_needs_upload = True
-                print(self.image)
+                self.image.image = Image.open(url.toLocalFile())
+                self.image.image_needs_upload = True
+                print(self.image.image)
                 self.update()
 
     def initializeGL(self) -> None:
-        self.vao = GL.glGenVertexArrays(1)
-        self.shader = compileProgram(
-            compileShader(
-                pkg_resources.resource_string(__name__, 'image.vert'),
-                GL.GL_VERTEX_SHADER),
-            compileShader(
-                pkg_resources.resource_string(__name__, 'image.frag'),
-                GL.GL_FRAGMENT_SHADER),
-        )
-        self.texture = GL.glGenTextures(1)
+        self.image.initializeGL()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if not self.is_dragging:
             return
         if self.previous_mouse is not None:
-            dPos = event.pos() - self.previous_mouse
-            dx = 2.0 * self.zoom * dPos.x() / self.width()
-            dy = -2.0 * self.zoom * dPos.y() / self.width()  # yes, width
-            self.center += (-dx, dy)
+            print(self.previous_mouse)
+            dPos = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
+            dx = 2.0 * self.camera.zoom * dPos.x / self.width()
+            dy = -2.0 * self.camera.zoom * dPos.y / self.width()  # yes, width
+            self.camera.center += (-dx, dy)
             self.update()
-        self.previous_mouse = event.pos()
+        self.previous_mouse = WindowPos.from_QPoint(event.pos())
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = True
-        self.previous_mouse = event.pos()
+        self.previous_mouse = WindowPos.from_QPoint(event.pos())
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = False
@@ -88,44 +69,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if dScale == 0:
             return
         dScale = 1.07 ** -dScale
-        zoom1 = self.zoom
-        self.zoom *= dScale
-        zoom2 = self.zoom
+        zoom1 = self.camera.zoom
+        self.camera.zoom *= dScale
+        zoom2 = self.camera.zoom
         # Keep location under mouse during zoom
-        window_center = vec(self.width()/2.0, self.height()/2.0)
-        mouse_pos = vec(event.pos().x(), event.pos().y())
-        adjust = 2.0 * (zoom1 - zoom2) * (mouse_pos - window_center) / self.width()  # canvas coords
-        self.center += adjust
+        window_center = WindowPos(self.width()/2.0, self.height()/2.0)
+        mouse_pos = WindowPos.from_QPoint(event.pos())
+        # TODO: remove ._pos and make canvas frame semantic
+        adjust = 2.0 * (zoom1 - zoom2) * (mouse_pos._pos - window_center._pos) / self.width()  # canvas coords
+        self.camera.center += adjust
         #
         self.update()
 
     def paintGL(self) -> None:
-        GL.glBindVertexArray(self.vao)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        if self.image_needs_upload:
-            GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
-            GL.glTexImage2D(
-                GL.GL_TEXTURE_2D,
-                0,
-                GL.GL_RGB,
-                self.image.width,
-                self.image.height,
-                0,
-                GL.GL_RGB,
-                GL.GL_UNSIGNED_BYTE,
-                numpy.array(list(self.image.getdata()), dtype=numpy.ubyte),
-            )
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
-            GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
-            self.image_needs_upload = False
-        GL.glUseProgram(self.shader)
-        GL.glUniform1f(self.aspect_location, self.aspect)
-        GL.glUniform1f(self.zoom_location, self.zoom)
-        GL.glUniform2fv(self.center_location, 1, self.center)
-        GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
+        self.image.paintGL()
 
     def resizeGL(self, width: int, height: int) -> None:
-        self.aspect = height/width
+        self.camera.aspect = height/width

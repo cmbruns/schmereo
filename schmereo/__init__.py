@@ -1,5 +1,7 @@
 import sys
 import traceback
+
+import numpy
 from PyQt5 import QtGui, QtWidgets, uic
 
 
@@ -29,3 +31,10 @@ if __name__ == '__main__':
     main_win = SchmereoApp()
     main_win.show()
     sys.exit(app.exec_())
+
+
+class Camera(object):
+    def __init__(self):
+        self.aspect = 1.0
+        self.zoom = 1.0
+        self.center = numpy.array((0, 0), dtype=numpy.float32)
