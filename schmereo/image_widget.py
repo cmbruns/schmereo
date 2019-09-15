@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PIL import Image
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import WindowPos, CanvasPos
@@ -47,9 +47,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         md = event.mimeData()
         if md.hasUrls():
             for url in md.urls():
-                self.image.image = Image.open(url.toLocalFile())
-                self.image.image_needs_upload = True
-                self.update()
+                self.file_dropped.emit(url.toLocalFile())
+
+    file_dropped = QtCore.pyqtSignal(str)
 
     def initializeGL(self) -> None:
         super().initializeGL()
@@ -80,7 +80,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         dScale = event.angleDelta().y() / 120.0
         if dScale == 0:
             return
-        dScale = 1.10 ** -dScale
+        dScale = 1.10 ** dScale
         # Keep location under mouse during zoom
         bKeepLocation = True
         if bKeepLocation:

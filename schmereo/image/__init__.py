@@ -1,10 +1,10 @@
 import pkg_resources
 
-import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileShader, compileProgram
 
 from schmereo.camera import Camera
+from schmereo.image.transform import Transform
 
 
 class SingleImage(object):
@@ -17,9 +17,11 @@ class SingleImage(object):
         self.image_needs_upload = False
         self.aspect_location = 0
         self.zoom_location = 1
-        self.center_location = 2
+        self.canvas_center_location = 2
+        self.image_center_location = 3
         self.file_name = None
         self.pixels = None
+        self.transform = Transform()
 
     def initializeGL(self) -> None:
         self.vao = GL.glGenVertexArrays(1)
@@ -61,7 +63,7 @@ class SingleImage(object):
                 self.pixels,
             )
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST_MIPMAP_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
             GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
@@ -69,5 +71,6 @@ class SingleImage(object):
         GL.glUseProgram(self.shader)
         GL.glUniform1f(self.aspect_location, aspect_ratio)
         GL.glUniform1f(self.zoom_location, self.camera.zoom)
-        GL.glUniform2fv(self.center_location, 1, self.camera.center.bytes)
+        GL.glUniform2fv(self.canvas_center_location, 1, self.camera.center.bytes)
+        GL.glUniform2fv(self.image_center_location, 1, self.transform.center.bytes)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)

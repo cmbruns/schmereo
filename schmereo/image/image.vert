@@ -2,7 +2,7 @@
 
 layout(location = 0) uniform float windowAspect = 1.0;
 layout(location = 1) uniform float zoom = 1.0;
-layout(location = 2) uniform vec2 center = vec2(0, 0);
+layout(location = 2) uniform vec2 canvas_center = vec2(0, 0);
 
 const float s = 1.0;
 const vec4 SCREEN_QUAD[4] = vec4[4](
@@ -31,5 +31,5 @@ void main() {
     gl_Position = SCREEN_QUAD[gl_VertexID];
     canvasCoord = CANVAS_COORD[gl_VertexID];
     canvasCoord.y *= windowAspect;
-    canvasCoord = center + zoom * canvasCoord;
+    canvasCoord = canvas_center + canvasCoord / zoom;
 }

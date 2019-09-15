@@ -78,13 +78,19 @@ class CanvasPos(PosBase):
         """
         Note: no origin offset is applied. This is method scales relative positions only.
         """
-        x = 2.0 * camera.zoom * pos.x / size.width()
-        y = 2.0 * camera.zoom * pos.y / size.width()  # yes, width
+        x = 2.0 * (1.0/camera.zoom) * pos.x / size.width()
+        y = 2.0 * (1.0/camera.zoom) * pos.y / size.width()  # yes, width
         return CanvasPos(x=x, y=y)
 
 
 class FractionalImagePos(PosBase):
-    pass
+    """
+    Frame is relative to image bounds.
+    One unit equals half the image width.
+    X increases to the right.
+    Y increases to the left.
+    Origin is center of image.
+    """
 
 
 class TextureCoordinate(PosBase):

@@ -1,7 +1,7 @@
 #version 460
 
 uniform sampler2D image;
-uniform vec2 image_center = vec2(0);
+layout(location = 3) uniform vec2 image_center = vec2(0);
 
 in noperspective vec2 canvasCoord;
 out vec4 frag_color;
@@ -18,6 +18,8 @@ void main()
 
     vec2 imgCoord = canvasCoord;
     imgCoord.y *= image_aspect;
+
+    imgCoord += image_center;
 
     vec2 texCoord = 0.5 * (imgCoord + vec2(1));
 

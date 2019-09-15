@@ -34,6 +34,8 @@ class Camera(QtCore.QObject):
 
     @zoom.setter
     def zoom(self, value: float):
+        if value < 0.25:
+            value = 0.25
         if self._zoom == value:
             return
         self._zoom = value
