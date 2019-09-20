@@ -135,7 +135,7 @@
   <customwidget>
    <class>ImageWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>schmereo/image_widget.h</header>
+   <header>schmereo/image/image_widget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

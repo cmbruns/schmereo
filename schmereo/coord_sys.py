@@ -95,3 +95,12 @@ class FractionalImagePos(PosBase):
 
 class TextureCoordinate(PosBase):
     pass
+
+
+class PixelCoordinate(PosBase):
+    """
+    X increases to the right.
+    Y increases to the bottom.
+    Origin is a upper left corner.
+    Units are pixels.
+    """

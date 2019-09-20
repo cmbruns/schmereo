@@ -1,3 +1,2 @@
-/schmereo/__pycache__/*.pyc
+*.pyc
 /.idea
-/schmereo/image/__pycache__/*.pyc

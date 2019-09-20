@@ -6,7 +6,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
-from schmereo.coord_sys import FractionalImagePos
+from schmereo.coord_sys import FractionalImagePos, PixelCoordinate
+from schmereo.marker import Marker, MarkerPair
 from schmereo.recent_file import RecentFileList
 
 
@@ -34,6 +35,11 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         #
         self.ui.leftImageWidget.image.transform.center = FractionalImagePos(-0.5, 0)
         self.ui.rightImageWidget.image.transform.center = FractionalImagePos(+0.5, 0)
+        #
+        self.marker_set = list()
+        self.marker_set.append(MarkerPair(
+            left=Marker(PixelCoordinate(1443, 1937)),
+            right=Marker(PixelCoordinate(3657, 1925))))
 
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)

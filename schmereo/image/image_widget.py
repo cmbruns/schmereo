@@ -1,11 +1,12 @@
 from typing import Optional
 
-from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import WindowPos, CanvasPos
 from schmereo.image import SingleImage
+from schmereo.image.action import AddMarkerAction
+from schmereo.marker import MarkerSet
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
@@ -14,6 +15,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if camera is None:
             camera = Camera()
         self.image = SingleImage(camera=camera)
+        self.markers = MarkerSet(camera=camera)
         self.aspect_ratio = 1.0
         self.is_dragging = False
         self.previous_mouse: Optional[WindowPos] = None
@@ -33,8 +35,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         mouse_pos = WindowPos.from_QPoint(event.pos())
         menu = QtWidgets.QMenu(self)
-        menu.addAction(QtWidgets.QAction(text='Add marker here', parent=self))
-        menu.addAction(QtWidgets.QAction(text='Split image', parent=self))
+        menu.addAction(AddMarkerAction(parent=self, mouse_pos=mouse_pos))
         menu.addAction(QtWidgets.QAction(text='Cancel [ESC]', parent=self))
         menu.exec(event.globalPos())
 
@@ -54,6 +55,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def initializeGL(self) -> None:
         super().initializeGL()
         self.image.initializeGL()
+        self.markers.initializeGL()
 
     def load_image(self, file_name, image, pixels) -> bool:
         return self.image.load_image(file_name, image, pixels)
@@ -99,6 +101,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def paintGL(self) -> None:
         self.image.paintGL(self.aspect_ratio)
+        self.markers.paintGL()
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height/width
