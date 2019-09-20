@@ -40,7 +40,7 @@ class MarkerSet(object):
             void main()
             {
                 gl_Position = vec4(0, 0, 0.5, 1);
-                gl_PointSize = 32;
+                gl_PointSize = 48;
             }
             '''), GL.GL_VERTEX_SHADER),
             compileShader(inspect.cleandoc('''
