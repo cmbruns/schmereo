@@ -88,9 +88,15 @@ class FractionalImagePos(PosBase):
     Frame is relative to image bounds.
     One unit equals half the image width.
     X increases to the right.
-    Y increases to the left.
+    Y increases to the bottom.
     Origin is center of image.
     """
+    @classmethod
+    def from_CanvasPos(cls, pos: CanvasPos, transform: 'ImageTransform') -> 'FractionalImagePos':
+        x = pos.x + transform.center.x
+        y = pos.y + transform.center.y
+        # TODO: rotation, scale
+        return FractionalImagePos(x, y)
 
 
 class TextureCoordinate(PosBase):
@@ -104,3 +110,11 @@ class PixelCoordinate(PosBase):
     Origin is a upper left corner.
     Units are pixels.
     """
+
+
+class ImageTransform(object):
+    """
+    Image Transform: the 'real' output of schmereo
+    """
+    def __init__(self):
+        self.center = FractionalImagePos(0, 0)

@@ -2,7 +2,7 @@ import pkg_resources
 
 import numpy
 from PIL import Image
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
@@ -35,6 +35,9 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         #
         self.ui.leftImageWidget.image.transform.center = FractionalImagePos(-0.5, 0)
         self.ui.rightImageWidget.image.transform.center = FractionalImagePos(+0.5, 0)
+        #
+        for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
+            w.messageSent.connect(self.ui.statusbar.showMessage)
         #
         self.marker_set = list()
         self.marker_set.append(MarkerPair(

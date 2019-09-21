@@ -3,8 +3,8 @@ from typing import Optional
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.camera import Camera
-from schmereo.coord_sys import WindowPos, CanvasPos
-from schmereo.image import SingleImage
+from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos
+from schmereo.image.single_image import SingleImage
 from schmereo.image.action import AddMarkerAction
 from schmereo.marker import MarkerSet
 
@@ -20,6 +20,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.is_dragging = False
         self.previous_mouse: Optional[WindowPos] = None
         self.setAcceptDrops(True)
+        self.setMouseTracking(True)
 
     @property
     def camera(self):
@@ -60,15 +61,23 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def load_image(self, file_name, image, pixels) -> bool:
         return self.image.load_image(file_name, image, pixels)
 
+    messageSent = QtCore.pyqtSignal(str, int)
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        if not self.is_dragging:
-            return
-        if self.previous_mouse is not None:
-            dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
-            dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
-            self.camera.center -= dPosC
-            self.camera.notify()  # update UI now
-        self.previous_mouse = WindowPos.from_QPoint(event.pos())
+        if self.is_dragging:
+            if self.previous_mouse is not None:
+                dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
+                dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
+                self.camera.center -= dPosC
+                self.camera.notify()  # update UI now
+            self.previous_mouse = WindowPos.from_QPoint(event.pos())
+        else:
+            wp = WindowPos.from_QPoint(event.pos())
+            cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
+            fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
+            # self.messageSent.emit(f'Window Position: {event.pos().x()}, {event.pos().y()}', 500)
+            # self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
+            self.messageSent.emit(f'Fractional Image Position: {fip.x: 0.4f}, {fip.y: 0.4f}', 500)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = True
