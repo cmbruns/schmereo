@@ -64,20 +64,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     messageSent = QtCore.pyqtSignal(str, int)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
+        wp = WindowPos.from_QPoint(event.pos())
+        c_args = (self.camera, self.size())
+        cp = CanvasPos.from_WindowPos(wp, *c_args)
         if self.is_dragging:
             if self.previous_mouse is not None:
-                dPosW = WindowPos.from_QPoint(event.pos()) - self.previous_mouse
-                dPosC = CanvasPos.from_WindowPos(dPosW, self.camera, self.size())
+                dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, *c_args)
                 self.camera.center -= dPosC
                 self.camera.notify()  # update UI now
-            self.previous_mouse = WindowPos.from_QPoint(event.pos())
+            self.previous_mouse = wp
         else:
-            wp = WindowPos.from_QPoint(event.pos())
-            cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
-            fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
-            # self.messageSent.emit(f'Window Position: {event.pos().x()}, {event.pos().y()}', 500)
-            # self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
-            self.messageSent.emit(f'Fractional Image Position: {fip.x: 0.4f}, {fip.y: 0.4f}', 500)
+            # self.messageSent.emit(f'Window Position: {wp.x}, {wp.y}', 500)
+            self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
+            # fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
+            # self.messageSent.emit(f'Fractional Image Position: {fip.x: 0.4f}, {fip.y: 0.4f}', 500)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = True
@@ -96,13 +96,12 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         bKeepLocation = True
         if bKeepLocation:
             # zoom centered on current mouse pointer location
-            window_center = WindowPos(self.width()/2.0, self.height()/2.0)
             mouse_pos = WindowPos.from_QPoint(event.pos())
-            rel_posW = mouse_pos - window_center
-            start_posC = CanvasPos.from_WindowPos(rel_posW, self.camera, self.size())
+            c_args = (self.camera, self.size())
+            mpc1 = CanvasPos.from_WindowPos(mouse_pos, *c_args)
             self.camera.zoom *= dScale
-            end_posC = CanvasPos.from_WindowPos(rel_posW, self.camera, self.size())
-            self.camera.center += (start_posC - end_posC)
+            mpc2 = CanvasPos.from_WindowPos(mouse_pos, *c_args)
+            self.camera.center += (mpc1 - mpc2)
         else:
             # zoom centered on widget center
             self.camera.zoom *= dScale

@@ -75,11 +75,13 @@ class CanvasPos(PosBase):
     """
     @classmethod
     def from_WindowPos(cls, pos: WindowPos, camera: 'schmereo.Camera', size: QtCore.QSize) -> 'CanvasPos':
-        """
-        Note: no origin offset is applied. This is method scales relative positions only.
-        """
-        x = 2.0 * (1.0/camera.zoom) * pos.x / size.width()
-        y = 2.0 * (1.0/camera.zoom) * pos.y / size.width()  # yes, width
+        scale = 2.0 / camera.zoom / size.width()  # yes, width
+        x = pos.x - size.width() / 2.0
+        x *= scale
+        x += camera.center.x
+        y = pos.y - size.height() / 2.0
+        y *= scale
+        y += camera.center.y
         return CanvasPos(x=x, y=y)
 
 
@@ -93,8 +95,8 @@ class FractionalImagePos(PosBase):
     """
     @classmethod
     def from_CanvasPos(cls, pos: CanvasPos, transform: 'ImageTransform') -> 'FractionalImagePos':
-        x = pos.x + transform.center.x
-        y = pos.y + transform.center.y
+        x = pos.x
+        y = pos.y
         # TODO: rotation, scale
         return FractionalImagePos(x, y)
 

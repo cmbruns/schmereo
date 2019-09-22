@@ -43,6 +43,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.marker_set.append(MarkerPair(
             left=Marker(PixelCoordinate(1443, 1937)),
             right=Marker(PixelCoordinate(3657, 1925))))
+        self.zoom_increment = 1.10
 
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)
@@ -96,10 +97,10 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         QtCore.QCoreApplication.quit()
 
     def on_actionZoom_In_triggered(self):
-        self.zoom(amount=1.0/1.1)
+        self.zoom(amount=self.zoom_increment)
 
     def on_actionZoom_Out_triggered(self):
-        self.zoom(amount=1.1)
+        self.zoom(amount=1.0/self.zoom_increment)
 
     def zoom(self, amount: float):
         # In case the zoom is not linked between the two image widgets...
