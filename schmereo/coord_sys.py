@@ -95,23 +95,28 @@ class FractionalImagePos(PosBase):
     """
     @classmethod
     def from_CanvasPos(cls, pos: CanvasPos, transform: 'ImageTransform') -> 'FractionalImagePos':
-        x = pos.x
-        y = pos.y
+        x = pos.x + transform.center.x
+        y = pos.y + transform.center.y
         # TODO: rotation, scale
         return FractionalImagePos(x, y)
 
 
-class TextureCoordinate(PosBase):
-    pass
-
-
-class PixelCoordinate(PosBase):
+class ImagePixelCoordinate(PosBase):
     """
+    Frame is relative to image bounds.
+    Origin is at image upper left corner.
     X increases to the right.
-    Y increases to the bottom.
-    Origin is a upper left corner.
-    Units are pixels.
+    Y increases down.
+    One unit is image width in horizontal direction, image height in vertical direction.
     """
+    @classmethod
+    def from_FractionalImagePos(cls, pos: FractionalImagePos, image_size) -> 'ImagePixelCoordinate':
+        x = pos.x + 1.0
+        x *= image_size[0] * 0.5
+        aspect = image_size[1] / image_size[0]
+        y = pos.y + aspect
+        y *= image_size[1] * 0.5 / aspect
+        return ImagePixelCoordinate(x, y)
 
 
 class ImageTransform(object):

@@ -6,11 +6,11 @@ from OpenGL import GL
 from OpenGL.GL.shaders import compileProgram, compileShader
 from PIL import Image
 
-from schmereo.coord_sys import PixelCoordinate
+from schmereo.coord_sys import ImagePixelCoordinate
 
 
 class Marker(object):
-    def __init__(self, pos: PixelCoordinate):
+    def __init__(self, pos: ImagePixelCoordinate):
         self.pos = pos
         self.is_manually_placed = False
 

@@ -3,7 +3,7 @@ from typing import Optional
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.camera import Camera
-from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos
+from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos, ImagePixelCoordinate
 from schmereo.image.single_image import SingleImage
 from schmereo.image.action import AddMarkerAction
 from schmereo.marker import MarkerSet
@@ -75,9 +75,15 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.previous_mouse = wp
         else:
             # self.messageSent.emit(f'Window Position: {wp.x}, {wp.y}', 500)
-            self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
-            # fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
+            # self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
+            fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
             # self.messageSent.emit(f'Fractional Image Position: {fip.x: 0.4f}, {fip.y: 0.4f}', 500)
+            img = self.image.image
+            img_size = (1, 1)
+            if img:
+                img_size = (img.width, img.height)
+            tc = ImagePixelCoordinate.from_FractionalImagePos(fip, img_size)
+            self.messageSent.emit(f'Pixel: {tc.x: 0.1f}, {tc.y: 0.1f}', 1500)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = True
