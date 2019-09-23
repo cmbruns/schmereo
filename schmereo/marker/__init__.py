@@ -34,28 +34,12 @@ class MarkerSet(object):
     def initializeGL(self):
         self.vao = GL.glGenVertexArrays(1)
         self.shader = compileProgram(
-            compileShader(inspect.cleandoc('''
-            #version 460 core
-            
-            void main()
-            {
-                gl_Position = vec4(0, 0, 0.5, 1);
-                gl_PointSize = 48;
-            }
-            '''), GL.GL_VERTEX_SHADER),
-            compileShader(inspect.cleandoc('''
-            #version 460 core
-            
-            uniform sampler2D image;
-            
-            out vec4 fragColor;
-            
-            void main()
-            {
-                vec4 color = vec4(1.0, 1.0, 0.2, 0.3);
-                fragColor = texture(image, gl_PointCoord) * color;
-            }
-            '''), GL.GL_FRAGMENT_SHADER),
+            compileShader(
+                pkg_resources.resource_string('schmereo.marker', 'marker.vert'),
+                GL.GL_VERTEX_SHADER),
+            compileShader(
+                pkg_resources.resource_string('schmereo.marker', 'marker.frag'),
+                GL.GL_FRAGMENT_SHADER),
         )
         GL.glBindVertexArray(self.vao)
         GL.glEnable(GL.GL_PROGRAM_POINT_SIZE)
@@ -63,7 +47,6 @@ class MarkerSet(object):
         GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         self.texture = GL.glGenTextures(1)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        # GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
         GL.glTexImage2D(
             GL.GL_TEXTURE_2D,
             0,
@@ -85,4 +68,5 @@ class MarkerSet(object):
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+        GL.glUniform1i(0, 0)  # marker image is in texture unit zero
         GL.glDrawArrays(GL.GL_POINTS, 0, 1)
