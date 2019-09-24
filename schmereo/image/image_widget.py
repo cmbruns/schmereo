@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Optional
 
 import numpy
@@ -6,7 +7,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos, ImagePixelCoordinate
 from schmereo.image.single_image import SingleImage
-from schmereo.image.action import AddMarkerAction
 from schmereo.marker import MarkerSet
 
 
@@ -23,6 +23,12 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
 
+    def add_marker(self, action):
+        mouse_pos = action.data()
+        image_pos = self.image_from_window(mouse_pos)
+        self.markers.add_marker([*image_pos])
+        self.update()
+
     @property
     def camera(self):
         return self.image.camera
@@ -35,9 +41,12 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent):
         if self.image.image is None:
             return
-        mouse_pos = WindowPos.from_QPoint(event.pos())
+        mouse_pos = event.pos()
+        add_marker_action = QtWidgets.QAction(text='Add Marker Here', parent=self)
+        add_marker_action.setData(mouse_pos)
+        add_marker_action.triggered.connect(partial(self.add_marker, add_marker_action))
         menu = QtWidgets.QMenu(self)
-        menu.addAction(AddMarkerAction(parent=self, mouse_pos=mouse_pos))
+        menu.addAction(add_marker_action)
         menu.addAction(QtWidgets.QAction(text='Cancel [ESC]', parent=self))
         menu.exec(event.globalPos())
 
@@ -54,6 +63,18 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     file_dropped = QtCore.pyqtSignal(str)
 
+    def image_from_window(self, q_point: QtCore.QPoint):
+        wp = WindowPos.from_QPoint(q_point)
+        c_args = (self.camera, self.size())
+        cp = CanvasPos.from_WindowPos(wp, *c_args)
+        fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
+        img = self.image.image
+        img_size = (1, 1)
+        if img:
+            img_size = (img.width, img.height)
+        ip = ImagePixelCoordinate.from_FractionalImagePos(fip, img_size)
+        return ip
+
     def initializeGL(self) -> None:
         super().initializeGL()
         self.image.initializeGL()
@@ -65,26 +86,18 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     messageSent = QtCore.pyqtSignal(str, int)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        wp = WindowPos.from_QPoint(event.pos())
-        c_args = (self.camera, self.size())
-        cp = CanvasPos.from_WindowPos(wp, *c_args)
         if self.is_dragging:
+            wp = WindowPos.from_QPoint(event.pos())
+            c_args = (self.camera, self.size())
+            cp = CanvasPos.from_WindowPos(wp, *c_args)
             if self.previous_mouse is not None:
                 dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, *c_args)
                 self.camera.center -= dPosC
                 self.camera.notify()  # update UI now
             self.previous_mouse = wp
         else:
-            # self.messageSent.emit(f'Window Position: {wp.x}, {wp.y}', 500)
-            # self.messageSent.emit(f'Canvas Position: {cp.x: 0.4f}, {cp.y: 0.4f}', 500)
-            fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
-            # self.messageSent.emit(f'Fractional Image Position: {fip.x: 0.4f}, {fip.y: 0.4f}', 500)
-            img = self.image.image
-            img_size = (1, 1)
-            if img:
-                img_size = (img.width, img.height)
-            tc = ImagePixelCoordinate.from_FractionalImagePos(fip, img_size)
-            self.messageSent.emit(f'Pixel: {tc.x: 0.1f}, {tc.y: 0.1f}', 1500)
+            ip = self.image_from_window(event.pos())
+            self.messageSent.emit(f'Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}', 1500)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         self.is_dragging = True

@@ -34,7 +34,7 @@ class MarkerSet(object):
         self._array = None
         self._dirty_array = False
         self.vbo = None
-        self.add_marker([200, 200])
+        # self.add_marker([200, 200])
 
     def add_marker(self, pos: ImagePixelCoordinate):
         self.points.append(pos)
@@ -93,4 +93,4 @@ class MarkerSet(object):
         GL.glUniform2f(3, *camera.center)
         GL.glUniform1f(4, camera.zoom)
         GL.glUniform1f(5, window_aspect)
-        GL.glDrawArrays(GL.GL_POINTS, 0, 1)
+        GL.glDrawArrays(GL.GL_POINTS, 0, len(self.points))
