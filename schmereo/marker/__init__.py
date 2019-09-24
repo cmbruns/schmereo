@@ -30,6 +30,15 @@ class MarkerSet(object):
         self.image = Image.open(stream)
         self.pixels = numpy.frombuffer(buffer=self.image.convert('RGBA').tobytes(), dtype=numpy.ubyte)
         self.texture = None
+        self.points = list()
+        self._array = None
+        self._dirty_array = False
+        self.vbo = None
+        self.add_marker([200, 200])
+
+    def add_marker(self, pos: ImagePixelCoordinate):
+        self.points.append(pos)
+        self._dirty_array = True
 
     def initializeGL(self):
         self.vao = GL.glGenVertexArrays(1)
@@ -63,9 +72,19 @@ class MarkerSet(object):
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
+        self.vbo = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glEnableVertexAttribArray(0)
+        GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, False, 0, None)
 
-    def paintGL(self, image_size, transform, camera, window_aspect):
+    def paintGL(self, image_size, transform, camera, window_aspect, is_left=True):
+        if not self._dirty_array and self._array is None:
+            return
         GL.glBindVertexArray(self.vao)
+        if self._dirty_array:
+            self._array = numpy.array(self.points, dtype=numpy.float32)
+            GL.glBufferData(GL.GL_ARRAY_BUFFER, self._array, GL.GL_STATIC_DRAW)
+            self._dirty_array = False
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glUniform1i(0, 0)  # marker image is in texture unit zero
