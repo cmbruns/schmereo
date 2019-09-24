@@ -64,9 +64,14 @@ class MarkerSet(object):
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
 
-    def paintGL(self):
+    def paintGL(self, image_size, transform, camera, window_aspect):
         GL.glBindVertexArray(self.vao)
         GL.glUseProgram(self.shader)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         GL.glUniform1i(0, 0)  # marker image is in texture unit zero
+        GL.glUniform2i(1, *image_size)
+        GL.glUniform2f(2, *transform.center)
+        GL.glUniform2f(3, *camera.center)
+        GL.glUniform1f(4, camera.zoom)
+        GL.glUniform1f(5, window_aspect)
         GL.glDrawArrays(GL.GL_POINTS, 0, 1)

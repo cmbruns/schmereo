@@ -1,5 +1,6 @@
 from typing import Optional
 
+import numpy
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.camera import Camera
@@ -115,7 +116,17 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def paintGL(self) -> None:
         self.image.paintGL(self.aspect_ratio)
-        self.markers.paintGL()
+        img = self.image.image
+        if img:
+            image_size = numpy.array([img.width, img.height], dtype=numpy.int32)
+        else:
+            image_size = numpy.array([640, 480], dtype=numpy.int32)
+        self.markers.paintGL(
+            image_size=image_size,
+            transform=self.image.transform,
+            camera=self.camera,
+            window_aspect=self.aspect_ratio,
+        )
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height/width

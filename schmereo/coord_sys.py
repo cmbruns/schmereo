@@ -115,7 +115,7 @@ class ImagePixelCoordinate(PosBase):
         x *= image_size[0] * 0.5
         aspect = image_size[1] / image_size[0]
         y = pos.y + aspect
-        y *= image_size[1] * 0.5 / aspect
+        y *= image_size[0] * 0.5
         return ImagePixelCoordinate(x, y)
 
 
