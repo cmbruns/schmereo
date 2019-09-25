@@ -3,7 +3,7 @@ Roadmap for shmereo
 Phase 1:
   * drag and drop image (DONE)
   * zoom and pan image (DONE)
-  * add homologous points
+  * add homologous points (DONE)
   * update vertical alignment
   * export two images
 
