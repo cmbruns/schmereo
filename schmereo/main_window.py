@@ -7,7 +7,6 @@ from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate
-from schmereo.marker import Marker, MarkerPair
 from schmereo.recent_file import RecentFileList
 
 
@@ -40,9 +39,6 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             w.messageSent.connect(self.ui.statusbar.showMessage)
         #
         self.marker_set = list()
-        self.marker_set.append(MarkerPair(
-            left=Marker(ImagePixelCoordinate(1443, 1937)),
-            right=Marker(ImagePixelCoordinate(3657, 1925))))
         self.zoom_increment = 1.10
 
     def load_left_file(self, file_name: str) -> None:
@@ -78,6 +74,24 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     def log_message(self, message: str) -> None:
         self.ui.statusbar.showMessage(message)
+
+    @QtCore.pyqtSlot()
+    def on_actionAlign_Now_triggered(self):
+        print('align')
+        lm = self.ui.leftImageWidget.markers
+        rm = self.ui.rightImageWidget.markers
+        cm = min(len(lm), len(rm))
+        if cm < 1:
+            return
+        # TODO: rotation
+        # compute translation
+        dy = 0.0
+        dx = 0.0
+        for i in range(cm):
+            dx += (rm[i][0] - lm[i][0]) / cm  # average  TODO: max? min?
+            dy += (rm[i][1] - lm[i][1]) / cm  # average
+        print(dx, dy)
+        # TODO update image transforms
 
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):

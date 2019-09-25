@@ -9,18 +9,6 @@ from PIL import Image
 from schmereo.coord_sys import ImagePixelCoordinate
 
 
-class Marker(object):
-    def __init__(self, pos: ImagePixelCoordinate):
-        self.pos = pos
-        self.is_manually_placed = False
-
-
-class MarkerPair(object):
-    def __init__(self, left: Marker, right: Marker):
-        self.left = left
-        self.right = right
-
-
 class MarkerSet(object):
     def __init__(self, camera):
         self.camera = camera
@@ -35,6 +23,12 @@ class MarkerSet(object):
         self._dirty_array = False
         self.vbo = None
         # self.add_marker([200, 200])
+
+    def __getitem__(self, index):
+        return self.points[index]
+
+    def __len__(self) -> int:
+        return len(self.points)
 
     def add_marker(self, pos: ImagePixelCoordinate):
         self.points.append(pos)

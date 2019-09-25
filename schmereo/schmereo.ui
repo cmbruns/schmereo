@@ -83,8 +83,15 @@
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
    </widget>
+   <widget class="QMenu" name="menuAlign">
+    <property name="title">
+     <string>Align</string>
+    </property>
+    <addaction name="actionAlign_Now"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuAlign"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -128,6 +135,11 @@
   <action name="actionZoom_Out">
    <property name="text">
     <string>Zoom Out</string>
+   </property>
+  </action>
+  <action name="actionAlign_Now">
+   <property name="text">
+    <string>Align Now</string>
    </property>
   </action>
  </widget>
