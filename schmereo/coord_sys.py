@@ -100,6 +100,10 @@ class FractionalImagePos(PosBase):
         # TODO: rotation, scale
         return FractionalImagePos(x, y)
 
+    @classmethod
+    def from_ImagePixelCoordinate(cls, pos: 'ImagePixelCoordinate', image_size) -> 'FractionalImagePos' :
+        return fractionalImagePos_from_ImagePixelCoordinate(pos, image_size)
+
 
 class ImagePixelCoordinate(PosBase):
     """
@@ -125,3 +129,12 @@ class ImageTransform(object):
     """
     def __init__(self):
         self.center = FractionalImagePos(0, 0)
+
+
+def fractionalImagePos_from_ImagePixelCoordinate(pos: 'ImagePixelCoordinate', image_size) -> 'FractionalImagePos' :
+    aspect = image_size[1] / image_size[0]
+    y = pos.y * 2.0 / image_size[0]
+    y -= aspect
+    x = pos.x * 2.0 / image_size[0]
+    x -= 1.0
+    return ImagePixelCoordinate(x, y)

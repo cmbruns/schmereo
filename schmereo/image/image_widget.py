@@ -63,17 +63,27 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     file_dropped = QtCore.pyqtSignal(str)
 
-    def image_from_window(self, q_point: QtCore.QPoint):
-        wp = WindowPos.from_QPoint(q_point)
-        c_args = (self.camera, self.size())
-        cp = CanvasPos.from_WindowPos(wp, *c_args)
-        fip = FractionalImagePos.from_CanvasPos(cp, self.image.transform)
+    def fract_from_image(self, pos: ImagePixelCoordinate) -> FractionalImagePos:
+        img = self.image.image
+        img_size = (1, 1)
+        if img:
+            img_size = (img.width, img.height)
+        return FractionalImagePos.from_ImagePixelCoordinate(pos, img_size)
+
+    def image_from_canvas(self, pos: CanvasPos) -> ImagePixelCoordinate:
+        fip = FractionalImagePos.from_CanvasPos(pos, self.image.transform)
         img = self.image.image
         img_size = (1, 1)
         if img:
             img_size = (img.width, img.height)
         ip = ImagePixelCoordinate.from_FractionalImagePos(fip, img_size)
         return ip
+
+    def image_from_window(self, q_point: QtCore.QPoint) -> ImagePixelCoordinate:
+        wp = WindowPos.from_QPoint(q_point)
+        c_args = (self.camera, self.size())
+        cp = CanvasPos.from_WindowPos(wp, *c_args)
+        return self.image_from_canvas(cp)
 
     def initializeGL(self) -> None:
         super().initializeGL()

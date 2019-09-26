@@ -4,10 +4,11 @@ Phase 1:
   * drag and drop image (DONE)
   * zoom and pan image (DONE)
   * add homologous points (DONE)
-  * update vertical alignment
+  * update vertical alignment (DONE)
   * export two images
 
 Phase 2:
+  * clear markers
   * update rotation
   * update stereo window
 

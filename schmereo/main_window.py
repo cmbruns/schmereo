@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
-from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate
+from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.recent_file import RecentFileList
 
 
@@ -78,8 +78,10 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
         print('align')
-        lm = self.ui.leftImageWidget.markers
-        rm = self.ui.rightImageWidget.markers
+        lwidg = self.ui.leftImageWidget
+        rwidg = self.ui.rightImageWidget
+        lm = lwidg.markers
+        rm = rwidg.markers
         cm = min(len(lm), len(rm))
         if cm < 1:
             return
@@ -90,8 +92,23 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         for i in range(cm):
             dx += (rm[i][0] - lm[i][0]) / cm  # average  TODO: max? min?
             dy += (rm[i][1] - lm[i][1]) / cm  # average
-        print(dx, dy)
-        # TODO update image transforms
+        # convert current center difference to image pixels
+        c_c = CanvasPos(0, 0)  # center of image is canvas 0, 0
+        lc_i = lwidg.image_from_canvas(c_c)
+        rc_i = rwidg.image_from_canvas(c_c)
+        desired = ImagePixelCoordinate(dx, dy)
+        current = rc_i - lc_i
+        change = desired - current
+        # Apply half to each eye image
+        change2 = ImagePixelCoordinate(0.5 * change.x, 0.5 * change.y)
+        lc_i -= change2
+        lc_f = lwidg.fract_from_image(lc_i)
+        lwidg.image.transform.center = lc_f
+        rc_i += change2
+        rc_f = rwidg.fract_from_image(rc_i)
+        rwidg.image.transform.center = rc_f
+        lwidg.update()
+        rwidg.update()
 
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
@@ -105,9 +122,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             return
         self.load_file(file_name)
 
-    @staticmethod
     @QtCore.pyqtSlot()
-    def on_actionQuit_triggered():
+    def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
 
     def on_actionZoom_In_triggered(self):
