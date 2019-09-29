@@ -22,6 +22,7 @@ Phase 3:
   * export jps, pns, mpo file formats
   * log alignment results to status bar
   * disable export, align menus at first
+  * tool button for adding markers
 
 Phase 4:
   * update scale

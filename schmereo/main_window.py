@@ -1,14 +1,16 @@
+import inspect
 import pkg_resources
 
 import numpy
 from PIL import Image
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.image.image_saver import ImageSaver
 from schmereo.recent_file import RecentFileList
+from schmereo.version import __version__
 
 
 class SchmereoMainWindow(QtWidgets.QMainWindow):
@@ -84,6 +86,17 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.ui.statusbar.showMessage(message)
 
     @QtCore.pyqtSlot()
+    def on_actionAbout_Schmereo_triggered(self):
+        QtWidgets.QMessageBox.about(
+            self, 'About Schmereo',
+            inspect.cleandoc(f'''
+            Schmereo stereograph restoration application.
+            By Christopher M. Bruns
+            Version {__version__}
+            '''),
+        )
+
+    @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
         lwidg = self.ui.leftImageWidget
         rwidg = self.ui.rightImageWidget
@@ -139,6 +152,11 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
+
+    @QtCore.pyqtSlot()
+    def on_actionReport_a_Problem_triggered(self):
+        url = QtCore.QUrl('https://github.com/cmbruns/schmelreo/issues')
+        QtGui.QDesktopServices.openUrl(url)
 
     @QtCore.pyqtSlot()
     def on_actionSave_Images_triggered(self):
