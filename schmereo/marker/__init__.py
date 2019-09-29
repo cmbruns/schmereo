@@ -22,7 +22,6 @@ class MarkerSet(object):
         self._array = None
         self._dirty_array = False
         self.vbo = None
-        # self.add_marker([200, 200])
 
     def __getitem__(self, index):
         return self.points[index]
@@ -32,6 +31,12 @@ class MarkerSet(object):
 
     def add_marker(self, pos: ImagePixelCoordinate):
         self.points.append(pos)
+        self._dirty_array = True
+
+    def clear(self):
+        if len(self.points) == 0:
+            return
+        self.points[:] = []
         self._dirty_array = True
 
     def initializeGL(self):

@@ -45,6 +45,10 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.zoom_increment = 1.10
         self.image_saver = ImageSaver(self.ui.leftImageWidget, self.ui.rightImageWidget)
 
+    def eye_widgets(self):
+        for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
+            yield w
+
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)
 
@@ -112,6 +116,13 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         rwidg.image.transform.center = rc_f
         lwidg.update()
         rwidg.update()
+
+    @QtCore.pyqtSlot()
+    def on_actionClear_Markers_triggered(self):
+        for w in self.eye_widgets():
+            w.markers.clear()
+        for w in self.eye_widgets():
+            w.update()
 
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):

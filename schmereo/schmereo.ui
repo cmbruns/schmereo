@@ -67,6 +67,7 @@
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuRecent_Files"/>
+    <addaction name="separator"/>
     <addaction name="actionSave_Images"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -75,6 +76,8 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionReport_a_Problem"/>
+    <addaction name="separator"/>
     <addaction name="actionAbout_Schmereo"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -84,15 +87,19 @@
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
    </widget>
-   <widget class="QMenu" name="menuAlign">
+   <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Align</string>
+     <string>Edit</string>
     </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
     <addaction name="actionAlign_Now"/>
+    <addaction name="actionClear_Markers"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
-   <addaction name="menuAlign"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -146,6 +153,32 @@
   <action name="actionSave_Images">
    <property name="text">
     <string>Export Image...</string>
+   </property>
+  </action>
+  <action name="actionClear_Markers">
+   <property name="text">
+    <string>Clear Markers</string>
+   </property>
+  </action>
+  <action name="actionReport_a_Problem">
+   <property name="text">
+    <string>Report a Problem...</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Redo</string>
    </property>
   </action>
  </widget>

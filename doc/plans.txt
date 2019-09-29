@@ -1,27 +1,27 @@
 Roadmap for shmereo
 
-Phase 1:
+Phase 1: (DONE)
   * drag and drop image (DONE)
   * zoom and pan image (DONE)
   * add homologous points (DONE)
   * update vertical alignment (DONE)
-  * export two images
+  * export image pair (DONE)
 
 Phase 2:
-  * clear markers
+  * clear markers (DONE)
   * update rotation
+  * create tool for splitting pns, jps
   * update stereo window
-  * disable export, align menus at first
 
 Phase 3:
+  * match brightness / contrast
   * import jps, pns, mpo file formats
   * cubic interpolation
   * unlink cameras
   * choice of smooth vs pixelated
-  * match brightness / contrast
   * export jps, pns, mpo file formats
-  * create tool for splitting pns, jps
   * log alignment results to status bar
+  * disable export, align menus at first
 
 Phase 4:
   * update scale
