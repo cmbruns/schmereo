@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from schmereo.coord_sys import CanvasPos
 from schmereo.main_window import SchmereoMainWindow
@@ -30,6 +30,8 @@ if __name__ == '__main__':
     gl_format.setMinorVersion(6)
     gl_format.setProfile(QtGui.QSurfaceFormat.CoreProfile)
     gl_format.setSamples(4)
-    QtGui.QSurfaceFormat.setDefaultFormat(gl_format);
+    QtGui.QSurfaceFormat.setDefaultFormat(gl_format)
+
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
 
     SchmereoApplication()

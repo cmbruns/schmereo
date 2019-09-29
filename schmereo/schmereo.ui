@@ -67,6 +67,7 @@
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="menuRecent_Files"/>
+    <addaction name="actionSave_Images"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -140,6 +141,11 @@
   <action name="actionAlign_Now">
    <property name="text">
     <string>Align Now</string>
+   </property>
+  </action>
+  <action name="actionSave_Images">
+   <property name="text">
+    <string>Export Image...</string>
    </property>
   </action>
  </widget>

@@ -7,6 +7,7 @@ from PyQt5.QtGui import QKeySequence
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
+from schmereo.image.image_saver import ImageSaver
 from schmereo.recent_file import RecentFileList
 
 
@@ -15,6 +16,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = uic.loadUi(uifile=pkg_resources.resource_stream('schmereo', 'schmereo.ui'), baseinstance=self)
         # Platform-specific semantic keyboard shortcuts cannot be set in Qt Designer
+        self.ui.actionOpen.setShortcut(QKeySequence.Open)
+        self.ui.actionSave_Images.setShortcut(QKeySequence.SaveAs)  # TODO: project files...
         self.ui.actionQuit.setShortcut(QKeySequence.Quit)  # no effect on Windows
         self.ui.actionZoom_In.setShortcuts([QKeySequence.ZoomIn, 'Ctrl+='])  # '=' so I don't need to press SHIFT
         self.ui.actionZoom_Out.setShortcut(QKeySequence.ZoomOut)
@@ -40,6 +43,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         #
         self.marker_set = list()
         self.zoom_increment = 1.10
+        self.image_saver = ImageSaver(self.ui.leftImageWidget, self.ui.rightImageWidget)
 
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)
@@ -126,12 +130,30 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionQuit_triggered(self):
         QtCore.QCoreApplication.quit()
 
+    @QtCore.pyqtSlot()
+    def on_actionSave_Images_triggered(self):
+        if not self.image_saver.can_save():
+            return
+        file_name, file_type = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption='Save File(s)',
+            filter='3D Images (*.pns *.jps)',
+        )
+        if file_name is None:
+            return
+        if len(file_name) < 1:
+            return
+        self.image_saver.save_image(file_name, file_type)
+
+    @QtCore.pyqtSlot()
     def on_actionZoom_In_triggered(self):
         self.zoom(amount=self.zoom_increment)
 
+    @QtCore.pyqtSlot()
     def on_actionZoom_Out_triggered(self):
         self.zoom(amount=1.0/self.zoom_increment)
 
+    @QtCore.pyqtSlot()
     def zoom(self, amount: float):
         # In case the zoom is not linked between the two image widgets...
         widgets = (self.ui.leftImageWidget, self.ui.rightImageWidget)

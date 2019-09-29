@@ -43,9 +43,11 @@ class SingleImage(object):
         self.image_needs_upload = True
         return True
 
-    def paintGL(self, aspect_ratio) -> None:
+    def paintGL(self, aspect_ratio, camera=None) -> None:
         if self.pixels is None:
             return
+        if camera is None:
+            camera = self.camera
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         if self.image_needs_upload:
@@ -61,7 +63,7 @@ class SingleImage(object):
                 GL.GL_UNSIGNED_BYTE,
                 self.pixels,
             )
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
@@ -69,7 +71,7 @@ class SingleImage(object):
             self.image_needs_upload = False
         GL.glUseProgram(self.shader)
         GL.glUniform1f(self.aspect_location, aspect_ratio)
-        GL.glUniform1f(self.zoom_location, self.camera.zoom)
-        GL.glUniform2fv(self.canvas_center_location, 1, self.camera.center.bytes)
+        GL.glUniform1f(self.zoom_location, camera.zoom)
+        GL.glUniform2fv(self.canvas_center_location, 1, camera.center.bytes)
         GL.glUniform2fv(self.image_center_location, 1, self.transform.center.bytes)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)

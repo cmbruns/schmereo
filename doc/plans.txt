@@ -11,6 +11,7 @@ Phase 2:
   * clear markers
   * update rotation
   * update stereo window
+  * disable export, align menus at first
 
 Phase 3:
   * import jps, pns, mpo file formats
@@ -19,6 +20,7 @@ Phase 3:
   * choice of smooth vs pixelated
   * match brightness / contrast
   * export jps, pns, mpo file formats
+  * create tool for splitting pns, jps
 
 Phase 4:
   * update scale
