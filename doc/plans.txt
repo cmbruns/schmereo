@@ -21,6 +21,7 @@ Phase 3:
   * match brightness / contrast
   * export jps, pns, mpo file formats
   * create tool for splitting pns, jps
+  * log alignment results to status bar
 
 Phase 4:
   * update scale

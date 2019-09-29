@@ -81,7 +81,6 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
-        print('align')
         lwidg = self.ui.leftImageWidget
         rwidg = self.ui.rightImageWidget
         lm = lwidg.markers
