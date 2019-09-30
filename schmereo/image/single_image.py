@@ -63,6 +63,7 @@ class SingleImage(object):
                 GL.GL_UNSIGNED_BYTE,
                 self.pixels,
             )
+            # TODO: implement toggle between NEAREST, LINEAR, CUBIC...
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
             GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)

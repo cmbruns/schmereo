@@ -1,2 +1,3 @@
 
 Debug dragging non-image files
+Ensure pns and jps files are really correct type

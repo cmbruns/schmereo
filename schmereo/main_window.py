@@ -5,6 +5,7 @@ import numpy
 from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
@@ -46,10 +47,22 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.marker_set = list()
         self.zoom_increment = 1.10
         self.image_saver = ImageSaver(self.ui.leftImageWidget, self.ui.rightImageWidget)
+        # TODO: object for AddMarker tool button
+        tb = self.ui.toolButton
+        tb.setDefaultAction(self.ui.actionAdd_Marker)
+        sz = 32
+        tb.setFixedSize(sz, sz)
+        tb.setIconSize(QtCore.QSize(sz, sz))
+        # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
             yield w
+
+    def keyReleaseEvent(self, event: QtGui.QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            # clear add-marker mode
+            self.ui.actionAdd_Marker.setChecked(False)
 
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)
@@ -95,6 +108,13 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             Version {__version__}
             '''),
         )
+
+    @QtCore.pyqtSlot(bool)
+    def on_actionAdd_Marker_toggled(self, checked):
+        for w in self.eye_widgets():
+            w.set_add_marker_mode(checked)
+        print(checked)
+        # TODO:
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):

@@ -1,8 +1,10 @@
+import datetime
 from functools import partial
 from typing import Optional
 
 import numpy
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos, ImagePixelCoordinate
@@ -18,14 +20,26 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image = SingleImage(camera=camera)
         self.markers = MarkerSet(camera=camera)
         self.aspect_ratio = 1.0
+        # TODO: drag detection object
         self.is_dragging = False
         self.previous_mouse: Optional[WindowPos] = None
+        #
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
+        # TODO: cursor manager object
+        self.drag_cursor = Qt.ClosedHandCursor
+        self.hover_cursor = Qt.OpenHandCursor
+        self.setCursor(self.hover_cursor)
+        # TODO: click detection object
+        self.mouse_press_pos = None
+        self.mouse_press_time = datetime.datetime.now()
+        self.maybe_clicking = False
+        #
+        self._add_marker_mode = False
 
     def add_marker(self, action):
         mouse_pos = action.data()
-        image_pos = self.image_from_window(mouse_pos)
+        image_pos = self.image_from_window_qpoint(mouse_pos)
         self.markers.add_marker([*image_pos])
         self.update()
 
@@ -79,7 +93,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         ip = ImagePixelCoordinate.from_FractionalImagePos(fip, img_size)
         return ip
 
-    def image_from_window(self, q_point: QtCore.QPoint) -> ImagePixelCoordinate:
+    def image_from_window_qpoint(self, q_point: QtCore.QPoint) -> ImagePixelCoordinate:
         wp = WindowPos.from_QPoint(q_point)
         c_args = (self.camera, self.size())
         cp = CanvasPos.from_WindowPos(wp, *c_args)
@@ -95,6 +109,17 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     messageSent = QtCore.pyqtSignal(str, int)
 
+    def mouseClickEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.maybe_clicking = False
+        if self._add_marker_mode:
+            image_pos = self.image_from_window_qpoint(event.pos())
+            self.markers.add_marker([*image_pos])
+            self.update()
+            self.set_add_marker_mode(False)
+
+    def mouseDoubleClickEvent(self, *args, **kwargs):
+        self.maybe_clicking = False
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if self.is_dragging:
             wp = WindowPos.from_QPoint(event.pos())
@@ -106,16 +131,58 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
                 self.camera.notify()  # update UI now
             self.previous_mouse = wp
         else:
-            ip = self.image_from_window(event.pos())
+            ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f'Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}', 1500)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
+        # drag detection
         self.is_dragging = True
         self.previous_mouse = WindowPos.from_QPoint(event.pos())
+        # click detection
+        self.maybe_clicking = True
+        self.mouse_press_pos = QtCore.QPoint(event.pos().x(), event.pos().y())
+        self.mouse_press_time = datetime.datetime.now()
+        # cursor shape
+        if self.drag_cursor != self.hover_cursor:
+            self.setCursor(self.drag_cursor)
+            self.update()
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
+        # drag detection
         self.is_dragging = False
         self.previous_mouse = None
+        # click detection
+        d2 = 1000
+        if self.mouse_press_pos:
+            dp = event.pos() - self.mouse_press_pos
+            d2 = QtCore.QPoint.dotProduct(dp, dp)  # squared distance in pixels
+        if d2 > 10:  # TODO: calibrate
+            self.maybe_clicking = False  # too far
+        dt = datetime.datetime.now() - self.mouse_press_time
+        ms = dt.total_seconds() * 1000.0  # milliseconds
+        if ms > 800:
+            self.maybe_clicking = False
+        if ms <= 0:
+            self.maybe_clicking = False
+        print(ms, d2)
+        if self.maybe_clicking:
+            self.mouseClickEvent(event)
+        self.maybe_clicking = False
+        self.mouse_press_pos = None
+        # cursor shape
+        if self.drag_cursor != self.hover_cursor:
+            self.setCursor(self.hover_cursor)
+            self.update()
+
+    def set_add_marker_mode(self, checked: bool = True):
+        if checked:
+            self.hover_cursor = Qt.CrossCursor
+            self.drag_cursor = Qt.CrossCursor
+        else:
+            self.hover_cursor = Qt.OpenHandCursor
+            self.drag_cursor = Qt.ClosedHandCursor
+        self._add_marker_mode = checked
+        self.setCursor(self.hover_cursor)
 
     def wheelEvent(self, event: QtGui.QWheelEvent):
         dScale = event.angleDelta().y() / 120.0

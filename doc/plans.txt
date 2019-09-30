@@ -2,6 +2,7 @@ Roadmap for shmereo
 
 Phase 1: (DONE)
   * drag and drop image (DONE)
+  * recent file menu (DONE)
   * zoom and pan image (DONE)
   * add homologous points (DONE)
   * update vertical alignment (DONE)
@@ -9,12 +10,19 @@ Phase 1: (DONE)
 
 Phase 2:
   * clear markers (DONE)
+  * add markers from menu/toolbar
+    * hand tool button and marker tool button
+    * pop message after click in maker mode on wrong eye view
+    * debug exact marker display after alignment
+    * clear add_marker mode after setting second point, at the latest
   * update rotation
   * create tool for splitting pns, jps
   * update stereo window
 
 Phase 3:
   * match brightness / contrast
+  * color marker to be matched in opposing view
+  * drag markers to move position; also keyboard controls on selected marker
   * import jps, pns, mpo file formats
   * cubic interpolation
   * unlink cameras
