@@ -113,8 +113,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionAdd_Marker_toggled(self, checked):
         for w in self.eye_widgets():
             w.set_add_marker_mode(checked)
-        print(checked)
-        # TODO:
+        # TODO: not if that widget has more than the others...
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
@@ -175,7 +174,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionReport_a_Problem_triggered(self):
-        url = QtCore.QUrl('https://github.com/cmbruns/schmelreo/issues')
+        url = QtCore.QUrl('https://github.com/cmbruns/schmereo/issues')
         QtGui.QDesktopServices.openUrl(url)
 
     @QtCore.pyqtSlot()

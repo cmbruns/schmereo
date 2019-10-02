@@ -6,17 +6,17 @@ layout(location = 2) uniform vec2 canvas_center = vec2(0, 0);
 
 const float s = 1.0;
 const vec4 SCREEN_QUAD[4] = vec4[4](
-    vec4( s, -s, 0.5, 1),
-    vec4( s,  s, 0.5, 1),
-    vec4(-s, -s, 0.5, 1),
-    vec4(-s,  s, 0.5, 1)
+    vec4( s, -s, 0.5, 1),  // lower right
+    vec4( s,  s, 0.5, 1),  // upper right
+    vec4(-s, -s, 0.5, 1),  // lower left
+    vec4(-s,  s, 0.5, 1)   // upper left
 );
 const float t = 1.0;
 const vec2 CANVAS_COORD[4] = vec2[4](
-    vec2( t,  t),
-    vec2( t, -t),
-    vec2(-t,  t),
-    vec2(-t, -t)
+    vec2( t,  t),  // lower right
+    vec2( t, -t),  // upper right
+    vec2(-t,  t),  // lower left
+    vec2(-t, -t)   // upper left
 );
 
 // output coordinate system is the CANVAS frame

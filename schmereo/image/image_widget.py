@@ -132,7 +132,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.previous_mouse = wp
         else:
             ip = self.image_from_window_qpoint(event.pos())
-            self.messageSent.emit(f'Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}', 1500)
+            self.messageSent.emit(f'Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}', 3000)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         # drag detection
@@ -164,7 +164,6 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.maybe_clicking = False
         if ms <= 0:
             self.maybe_clicking = False
-        print(ms, d2)
         if self.maybe_clicking:
             self.mouseClickEvent(event)
         self.maybe_clicking = False
