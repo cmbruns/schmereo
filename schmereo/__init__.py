@@ -21,17 +21,17 @@ def exception_hook(exctype, value, traceback):
     sys.exit(1)
 
 
-if __name__ == '__main__':
+def run_schmereo():
     sys._excepthook = sys.excepthook
     sys.excepthook = exception_hook
-
     gl_format = QtGui.QSurfaceFormat()
     gl_format.setMajorVersion(4)
     gl_format.setMinorVersion(6)
     gl_format.setProfile(QtGui.QSurfaceFormat.CoreProfile)
     gl_format.setSamples(4)
     QtGui.QSurfaceFormat.setDefaultFormat(gl_format)
-
-    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_ShareOpenGLContexts)
-
     SchmereoApplication()
+
+
+if __name__ == '__main__':
+    run_schmereo()

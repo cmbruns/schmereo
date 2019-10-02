@@ -3,6 +3,7 @@ import pkg_resources
 
 import numpy
 from PIL import Image
+from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import Qt
@@ -12,6 +13,18 @@ from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasP
 from schmereo.image.image_saver import ImageSaver
 from schmereo.recent_file import RecentFileList
 from schmereo.version import __version__
+
+
+def _set_action_icon(action, package, image, on_image=None):
+    fh = pkg_resources.resource_stream(package, image)
+    img = ImageQt(Image.open(fh).convert('RGBA'))
+    icon = QtGui.QIcon(QtGui.QPixmap.fromImage(img))
+    if on_image is not None:
+        fh2 = pkg_resources.resource_stream(package, on_image)
+        img2 = ImageQt(Image.open(fh2).convert('RGBA'))
+        pm = QtGui.QPixmap.fromImage(img2)
+        icon.addPixmap(pm, state=QtGui.QIcon.On)
+    action.setIcon(icon)
 
 
 class SchmereoMainWindow(QtWidgets.QMainWindow):
@@ -57,6 +70,9 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         hb.setDefaultAction(self.ui.actionHand_Mode)
         hb.setFixedSize(sz, sz)
         hb.setIconSize(QtCore.QSize(sz, sz))
+        _set_action_icon(self.ui.actionAdd_Marker, 'schmereo.marker',
+                         'crosshair64.png', 'crosshair64blue.png')
+        _set_action_icon(self.ui.actionHand_Mode, 'schmereo', 'cursor-openhand.png')
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
 
     def eye_widgets(self):

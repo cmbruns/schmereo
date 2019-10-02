@@ -1,8 +1,11 @@
 import datetime
 from functools import partial
+import pkg_resources
 from typing import Optional
 
 import numpy
+from PIL import Image
+from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
@@ -10,6 +13,13 @@ from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos, ImagePixelCoordinate
 from schmereo.image.single_image import SingleImage
 from schmereo.marker import MarkerSet
+
+
+def _make_cursor(file_name):
+    fh = pkg_resources.resource_stream('schmereo', file_name)
+    img = ImageQt(Image.open(fh).convert('RGBA'))
+    cursor = QtGui.QCursor(QtGui.QPixmap.fromImage(img))
+    return cursor
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
@@ -27,8 +37,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         # TODO: cursor manager object
-        self.openhand_cursor = QtGui.QCursor(QtGui.QPixmap('cursor-openhand.png'))
-        self.grab_cursor = QtGui.QCursor(QtGui.QPixmap('cursor-closedhand.png'))
+        self.openhand_cursor = _make_cursor('cursor-openhand.png')
+        self.grab_cursor = _make_cursor('cursor-closedhand.png')
         self.drag_cursor = self.grab_cursor
         self.hover_cursor = self.openhand_cursor
         self.setCursor(self.hover_cursor)

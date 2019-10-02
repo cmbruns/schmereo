@@ -352,8 +352,8 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>marker/crosshair64.png</normaloff>
-     <normalon>marker/crosshair64blue.png</normalon>marker/crosshair64.png</iconset>
+     <normaloff>schmereo/marker/crosshair64.png</normaloff>
+     <normalon>schmereo/marker/crosshair64blue.png</normalon>marker/crosshair64.png</iconset>
    </property>
    <property name="text">
     <string>Add Marker</string>
@@ -365,7 +365,7 @@
   <action name="actionHand_Mode">
    <property name="icon">
     <iconset>
-     <normaloff>cursor-openhand.png</normaloff>cursor-openhand.png</iconset>
+     <normaloff>schmereo/cursor-openhand.png</normaloff>cursor-openhand.png</iconset>
    </property>
    <property name="text">
     <string>Hand Mode</string>
