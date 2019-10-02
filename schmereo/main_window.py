@@ -161,6 +161,10 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             w.update()
 
     @QtCore.pyqtSlot()
+    def on_actionHand_Mode_triggered(self):
+        self.ui.actionAdd_Marker.setChecked(False)
+
+    @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
         file_name, file_type = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
