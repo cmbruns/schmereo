@@ -48,11 +48,15 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.zoom_increment = 1.10
         self.image_saver = ImageSaver(self.ui.leftImageWidget, self.ui.rightImageWidget)
         # TODO: object for AddMarker tool button
-        tb = self.ui.toolButton
+        tb = self.ui.addMarkerToolButton
         tb.setDefaultAction(self.ui.actionAdd_Marker)
         sz = 32
         tb.setFixedSize(sz, sz)
         tb.setIconSize(QtCore.QSize(sz, sz))
+        hb = self.ui.handModeToolButton
+        hb.setDefaultAction(self.ui.actionHand_Mode)
+        hb.setFixedSize(sz, sz)
+        hb.setIconSize(QtCore.QSize(sz, sz))
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
 
     def eye_widgets(self):

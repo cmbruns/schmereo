@@ -13,7 +13,7 @@ Phase 2:
   * add markers from menu/toolbar
     * hand tool button and marker tool button
     * pop message after click in maker mode on wrong eye view
-    * debug exact marker display after alignment
+    * debug exact marker display after alignment (DONE)
     * clear add_marker mode after setting second point, at the latest
   * update rotation
   * create tool for splitting pns, jps
