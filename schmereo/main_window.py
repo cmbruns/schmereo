@@ -72,7 +72,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         hb.setIconSize(QtCore.QSize(sz, sz))
         _set_action_icon(self.ui.actionAdd_Marker, 'schmereo.marker',
                          'crosshair64.png', 'crosshair64blue.png')
-        _set_action_icon(self.ui.actionHand_Mode, 'schmereo', 'cursor-openhand.png')
+        _set_action_icon(self.ui.actionHand_Mode, 'schmereo', 'cursor-openhand20.png')
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
 
     def eye_widgets(self):

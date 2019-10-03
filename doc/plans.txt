@@ -18,6 +18,7 @@ Phase 2:
   * update rotation
   * create tool for splitting pns, jps
   * update stereo window
+  * use pyinstaller
 
 Phase 3:
   * match brightness / contrast

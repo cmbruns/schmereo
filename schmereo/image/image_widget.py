@@ -37,8 +37,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         # TODO: cursor manager object
-        self.openhand_cursor = _make_cursor('cursor-openhand.png')
-        self.grab_cursor = _make_cursor('cursor-closedhand.png')
+        self.openhand_cursor = _make_cursor('cursor-openhand20.png')
+        self.grab_cursor = _make_cursor('cursor-closedhand20.png')
+        self.cross_cursor = _make_cursor('crosshair32.png')
         self.drag_cursor = self.grab_cursor
         self.hover_cursor = self.openhand_cursor
         self.setCursor(self.hover_cursor)
@@ -188,8 +189,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def set_add_marker_mode(self, checked: bool = True):
         if checked:
-            self.hover_cursor = Qt.CrossCursor
-            self.drag_cursor = Qt.CrossCursor
+            self.hover_cursor = self.cross_cursor
+            self.drag_cursor = self.grab_cursor
         else:
             self.hover_cursor = self.openhand_cursor
             self.drag_cursor = self.grab_cursor
