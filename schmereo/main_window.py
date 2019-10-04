@@ -11,6 +11,7 @@ from PyQt5.QtCore import Qt
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.image.image_saver import ImageSaver
+from schmereo.marker.marker_manager import MarkerManager
 from schmereo.recent_file import RecentFileList
 from schmereo.version import __version__
 
@@ -74,6 +75,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
                          'crosshair64.png', 'crosshair64blue.png')
         _set_action_icon(self.ui.actionHand_Mode, 'schmereo', 'cursor-openhand20.png')
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
+        self.marker_manager = MarkerManager(self)
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
@@ -81,8 +83,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     def keyReleaseEvent(self, event: QtGui.QKeyEvent):
         if event.key() == Qt.Key_Escape:
-            # clear add-marker mode
-            self.ui.actionAdd_Marker.setChecked(False)
+            self.marker_manager.set_marker_mode(False)
 
     def load_left_file(self, file_name: str) -> None:
         self.load_file(file_name)
@@ -129,12 +130,6 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             '''),
         )
 
-    @QtCore.pyqtSlot(bool)
-    def on_actionAdd_Marker_toggled(self, checked):
-        for w in self.eye_widgets():
-            w.set_add_marker_mode(checked)
-        # TODO: not if that widget has more than the others...
-
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
         lwidg = self.ui.leftImageWidget
@@ -175,10 +170,6 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             w.markers.clear()
         for w in self.eye_widgets():
             w.update()
-
-    @QtCore.pyqtSlot()
-    def on_actionHand_Mode_triggered(self):
-        self.ui.actionAdd_Marker.setChecked(False)
 
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):

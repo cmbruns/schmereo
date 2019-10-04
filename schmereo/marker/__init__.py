@@ -30,7 +30,7 @@ class MarkerSet(object):
         return len(self.points)
 
     def add_marker(self, pos: ImagePixelCoordinate):
-        self.points.append(pos)
+        self.points.append([*pos])
         self._dirty_array = True
 
     def clear(self):

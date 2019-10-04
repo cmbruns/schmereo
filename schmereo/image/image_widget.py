@@ -51,10 +51,15 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self._add_marker_mode = False
         #
 
-    def add_marker(self, action):
+    def add_marker(self, image_pos: ImagePixelCoordinate):
+        self.markers.add_marker(image_pos)
+        self.marker_added.emit()
+        self.update()
+
+    def add_marker_from_action(self, action):
         mouse_pos = action.data()
         image_pos = self.image_from_window_qpoint(mouse_pos)
-        self.markers.add_marker([*image_pos])
+        self.add_marker(image_pos)
         self.update()
 
     @property
@@ -72,7 +77,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         mouse_pos = event.pos()
         add_marker_action = QtWidgets.QAction(text='Add Marker Here', parent=self)
         add_marker_action.setData(mouse_pos)
-        add_marker_action.triggered.connect(partial(self.add_marker, add_marker_action))
+        add_marker_action.triggered.connect(partial(self.add_marker_from_action, add_marker_action))
         menu = QtWidgets.QMenu(self)
         menu.addAction(add_marker_action)
         menu.addAction(QtWidgets.QAction(text='Cancel [ESC]', parent=self))
@@ -121,15 +126,15 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def load_image(self, file_name, image, pixels) -> bool:
         return self.image.load_image(file_name, image, pixels)
 
+    marker_added = QtCore.pyqtSignal()
+
     messageSent = QtCore.pyqtSignal(str, int)
 
     def mouseClickEvent(self, event: QtGui.QMouseEvent) -> None:
         self.maybe_clicking = False
         if self._add_marker_mode:
             image_pos = self.image_from_window_qpoint(event.pos())
-            self.markers.add_marker([*image_pos])
-            self.update()
-            self.set_add_marker_mode(False)
+            self.add_marker(image_pos)
 
     def mouseDoubleClickEvent(self, *args, **kwargs):
         self.maybe_clicking = False
