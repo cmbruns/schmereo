@@ -39,8 +39,14 @@ class MarkerManager(QObject):
 
     @pyqtSlot()
     def on_marker_added(self):
-        if len(self.widgets[0].markers) == len(self.widgets[1].markers):
+        len0 = len(self.widgets[0].markers)
+        len1 = len(self.widgets[1].markers)
+        if len0 == len1:
             self.set_marker_mode(False)
+        elif len0 > len1:
+            self.widgets[0].set_add_marker_mode(False)
+        else:
+            self.widgets[1].set_add_marker_mode(False)
 
     def set_marker_mode(self, mode_on=True):
         self.actionAdd_Marker.setChecked(mode_on)

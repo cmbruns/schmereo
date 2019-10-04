@@ -139,7 +139,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def mouseClickEvent(self, event: QtGui.QMouseEvent) -> None:
         self.maybe_clicking = False
-        if self._add_marker_mode:
+        if self._add_marker_mode and (event.button() == Qt.LeftButton):
             image_pos = self.image_from_window_qpoint(event.pos())
             self.add_marker(image_pos)
 
@@ -148,6 +148,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
         if self.is_dragging:
+            if not event.buttons() & Qt.LeftButton:
+                return
             wp = WindowPos.from_QPoint(event.pos())
             c_args = (self.camera, self.size())
             cp = CanvasPos.from_WindowPos(wp, *c_args)
@@ -161,6 +163,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
+        if not event.buttons() & Qt.LeftButton:
+            return
         # drag detection
         self.is_dragging = True
         self.previous_mouse = WindowPos.from_QPoint(event.pos())
@@ -174,6 +178,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.update()
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
+        # cursor shape
+        if self.drag_cursor != self.hover_cursor:
+            self.setCursor(self.hover_cursor)
         # drag detection
         self.is_dragging = False
         self.previous_mouse = None
@@ -194,10 +201,6 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.mouseClickEvent(event)
         self.maybe_clicking = False
         self.mouse_press_pos = None
-        # cursor shape
-        if self.drag_cursor != self.hover_cursor:
-            self.setCursor(self.hover_cursor)
-            self.update()
 
     def set_add_marker_mode(self, checked: bool = True):
         if checked:
