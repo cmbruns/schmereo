@@ -1,4 +1,3 @@
-import inspect
 import pkg_resources
 
 import numpy
@@ -14,9 +13,11 @@ class MarkerSet(object):
         self.camera = camera
         self.vao = None
         self.shader = None
-        stream = pkg_resources.resource_stream(__name__, 'crosshair64.png')
+        stream = pkg_resources.resource_stream(__name__, "crosshair64.png")
         self.image = Image.open(stream)
-        self.pixels = numpy.frombuffer(buffer=self.image.convert('RGBA').tobytes(), dtype=numpy.ubyte)
+        self.pixels = numpy.frombuffer(
+            buffer=self.image.convert("RGBA").tobytes(), dtype=numpy.ubyte
+        )
         self.texture = None
         self.points = list()
         self._array = None
@@ -43,11 +44,13 @@ class MarkerSet(object):
         self.vao = GL.glGenVertexArrays(1)
         self.shader = compileProgram(
             compileShader(
-                pkg_resources.resource_string('schmereo.marker', 'marker.vert'),
-                GL.GL_VERTEX_SHADER),
+                pkg_resources.resource_string("schmereo.marker", "marker.vert"),
+                GL.GL_VERTEX_SHADER,
+            ),
             compileShader(
-                pkg_resources.resource_string('schmereo.marker', 'marker.frag'),
-                GL.GL_FRAGMENT_SHADER),
+                pkg_resources.resource_string("schmereo.marker", "marker.frag"),
+                GL.GL_FRAGMENT_SHADER,
+            ),
         )
         GL.glBindVertexArray(self.vao)
         GL.glEnable(GL.GL_PROGRAM_POINT_SIZE)
@@ -67,7 +70,9 @@ class MarkerSet(object):
             self.pixels,
         )
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
+        GL.glTexParameteri(
+            GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR
+        )
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
         GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
@@ -76,7 +81,7 @@ class MarkerSet(object):
         GL.glEnableVertexAttribArray(0)
         GL.glVertexAttribPointer(0, 2, GL.GL_FLOAT, False, 0, None)
 
-    def paintGL(self, image_size, transform, camera, window_aspect, is_left=True):
+    def paintGL(self, image_size, transform, camera, window_aspect):
         if not self._dirty_array and self._array is None:
             return
         GL.glBindVertexArray(self.vao)

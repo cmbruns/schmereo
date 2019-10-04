@@ -26,11 +26,13 @@ class SingleImage(object):
         self.vao = GL.glGenVertexArrays(1)
         self.shader = compileProgram(
             compileShader(
-                pkg_resources.resource_string('schmereo.image', 'image.vert'),
-                GL.GL_VERTEX_SHADER),
+                pkg_resources.resource_string("schmereo.image", "image.vert"),
+                GL.GL_VERTEX_SHADER,
+            ),
             compileShader(
-                pkg_resources.resource_string('schmereo.image', 'image.frag'),
-                GL.GL_FRAGMENT_SHADER),
+                pkg_resources.resource_string("schmereo.image", "image.frag"),
+                GL.GL_FRAGMENT_SHADER,
+            ),
         )
         self.texture = GL.glGenTextures(1)
 
@@ -64,10 +66,18 @@ class SingleImage(object):
                 self.pixels,
             )
             # TODO: implement toggle between NEAREST, LINEAR, CUBIC...
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
-            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST
+            )
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR
+            )
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE
+            )
+            GL.glTexParameteri(
+                GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE
+            )
             GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
             self.image_needs_upload = False
         GL.glUseProgram(self.shader)

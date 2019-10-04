@@ -9,7 +9,7 @@ import numpy
 
 import schmereo
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def _vec2(x, y):
@@ -32,7 +32,7 @@ class PosBase(object):
         return self._pos[key]
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}({self.x}, {self.y})'
+        return f"{self.__class__.__name__}({self.x}, {self.y})"
 
     def __sub__(self: T, other: T) -> T:
         r = self._pos - other._pos
@@ -60,8 +60,9 @@ class WindowPos(PosBase):
     Y increases down.
     Origin is at center of widget window.
     """
+
     @classmethod
-    def from_QPoint(cls, qpoint: QtCore.QPoint) -> 'WindowPos':
+    def from_QPoint(cls, qpoint: QtCore.QPoint) -> "WindowPos":
         return WindowPos(x=qpoint.x(), y=qpoint.y())
 
 
@@ -73,8 +74,11 @@ class CanvasPos(PosBase):
     Y increases down.
     Origin is at center of untransformed image.
     """
+
     @classmethod
-    def from_WindowPos(cls, pos: WindowPos, camera: 'schmereo.Camera', size: QtCore.QSize) -> 'CanvasPos':
+    def from_WindowPos(
+        cls, pos: WindowPos, camera: "schmereo.Camera", size: QtCore.QSize
+    ) -> "CanvasPos":
         scale = 2.0 / camera.zoom / size.width()  # yes, width
         x = pos.x - size.width() / 2.0
         x *= scale
@@ -93,15 +97,20 @@ class FractionalImagePos(PosBase):
     Y increases to the bottom.
     Origin is center of image.
     """
+
     @classmethod
-    def from_CanvasPos(cls, pos: CanvasPos, transform: 'ImageTransform') -> 'FractionalImagePos':
+    def from_CanvasPos(
+        cls, pos: CanvasPos, transform: "ImageTransform"
+    ) -> "FractionalImagePos":
         x = pos.x + transform.center.x
         y = pos.y + transform.center.y
         # TODO: rotation, scale
         return FractionalImagePos(x, y)
 
     @classmethod
-    def from_ImagePixelCoordinate(cls, pos: 'ImagePixelCoordinate', image_size) -> 'FractionalImagePos' :
+    def from_ImagePixelCoordinate(
+        cls, pos: "ImagePixelCoordinate", image_size
+    ) -> "FractionalImagePos":
         return fractionalImagePos_from_ImagePixelCoordinate(pos, image_size)
 
 
@@ -113,8 +122,11 @@ class ImagePixelCoordinate(PosBase):
     Y increases down.
     One unit is image width in horizontal direction, image height in vertical direction.
     """
+
     @classmethod
-    def from_FractionalImagePos(cls, pos: FractionalImagePos, image_size) -> 'ImagePixelCoordinate':
+    def from_FractionalImagePos(
+        cls, pos: FractionalImagePos, image_size
+    ) -> "ImagePixelCoordinate":
         x = pos.x + 1.0
         x *= image_size[0] * 0.5
         aspect = image_size[1] / image_size[0]
@@ -127,11 +139,14 @@ class ImageTransform(object):
     """
     Image Transform: the 'real' output of schmereo
     """
+
     def __init__(self):
         self.center = FractionalImagePos(0, 0)
 
 
-def fractionalImagePos_from_ImagePixelCoordinate(pos: 'ImagePixelCoordinate', image_size) -> 'FractionalImagePos' :
+def fractionalImagePos_from_ImagePixelCoordinate(
+    pos: "ImagePixelCoordinate", image_size
+) -> "FractionalImagePos":
     aspect = image_size[1] / image_size[0]
     y = pos.y * 2.0 / image_size[0]
     y -= aspect

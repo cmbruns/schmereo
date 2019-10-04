@@ -18,11 +18,11 @@ from schmereo.version import __version__
 
 def _set_action_icon(action, package, image, on_image=None):
     fh = pkg_resources.resource_stream(package, image)
-    img = ImageQt(Image.open(fh).convert('RGBA'))
+    img = ImageQt(Image.open(fh).convert("RGBA"))
     icon = QtGui.QIcon(QtGui.QPixmap.fromImage(img))
     if on_image is not None:
         fh2 = pkg_resources.resource_stream(package, on_image)
-        img2 = ImageQt(Image.open(fh2).convert('RGBA'))
+        img2 = ImageQt(Image.open(fh2).convert("RGBA"))
         pm = QtGui.QPixmap.fromImage(img2)
         icon.addPixmap(pm, state=QtGui.QIcon.On)
     action.setIcon(icon)
@@ -31,18 +31,25 @@ def _set_action_icon(action, package, image, on_image=None):
 class SchmereoMainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ui = uic.loadUi(uifile=pkg_resources.resource_stream('schmereo', 'schmereo.ui'), baseinstance=self)
+        self.ui = uic.loadUi(
+            uifile=pkg_resources.resource_stream("schmereo", "schmereo.ui"),
+            baseinstance=self,
+        )
         # Platform-specific semantic keyboard shortcuts cannot be set in Qt Designer
         self.ui.actionOpen.setShortcut(QKeySequence.Open)
-        self.ui.actionSave_Images.setShortcut(QKeySequence.SaveAs)  # TODO: project files...
+        self.ui.actionSave_Images.setShortcut(
+            QKeySequence.SaveAs
+        )  # TODO: project files...
         self.ui.actionQuit.setShortcut(QKeySequence.Quit)  # no effect on Windows
-        self.ui.actionZoom_In.setShortcuts([QKeySequence.ZoomIn, 'Ctrl+='])  # '=' so I don't need to press SHIFT
+        self.ui.actionZoom_In.setShortcuts(
+            [QKeySequence.ZoomIn, "Ctrl+="]
+        )  # '=' so I don't need to press SHIFT
         self.ui.actionZoom_Out.setShortcut(QKeySequence.ZoomOut)
         #
         self.recent_files = RecentFileList(
             open_file_slot=self.load_file,
-            settings_key='recent_files',
-            menu=self.ui.menuRecent_Files
+            settings_key="recent_files",
+            menu=self.ui.menuRecent_Files,
         )
         # Link views
         self.shared_camera = Camera()
@@ -71,9 +78,13 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         hb.setDefaultAction(self.ui.actionHand_Mode)
         hb.setFixedSize(sz, sz)
         hb.setIconSize(QtCore.QSize(sz, sz))
-        _set_action_icon(self.ui.actionAdd_Marker, 'schmereo.marker',
-                         'crosshair64.png', 'crosshair64blue.png')
-        _set_action_icon(self.ui.actionHand_Mode, 'schmereo', 'cursor-openhand20.png')
+        _set_action_icon(
+            self.ui.actionAdd_Marker,
+            "schmereo.marker",
+            "crosshair64.png",
+            "crosshair64blue.png",
+        )
+        _set_action_icon(self.ui.actionHand_Mode, "schmereo", "cursor-openhand20.png")
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
         self.marker_manager = MarkerManager(self)
 
@@ -94,17 +105,19 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(str)
     def load_file(self, file_name: str) -> bool:
         result = False
-        self.log_message(f'Loading file {file_name}...')
+        self.log_message(f"Loading file {file_name}...")
         image = Image.open(file_name)
         if image is None:
-            self.log_message(f'ERROR: Image load failed.')
+            self.log_message(f"ERROR: Image load failed.")
             return False
-        self.log_message(f'Processing image {file_name}...')
-        pixels = numpy.frombuffer(buffer=image.convert('RGBA').tobytes(), dtype=numpy.ubyte)
+        self.log_message(f"Processing image {file_name}...")
+        pixels = numpy.frombuffer(
+            buffer=image.convert("RGBA").tobytes(), dtype=numpy.ubyte
+        )
         if pixels is None or len(pixels) < 1:
-            self.log_message(f'ERROR: Image processing failed.')
+            self.log_message(f"ERROR: Image processing failed.")
             return False
-        self.log_message(f'Finished processing image {file_name}')
+        self.log_message(f"Finished processing image {file_name}")
         result = self.ui.leftImageWidget.load_image(file_name, image, pixels)
         if result:
             result = self.ui.rightImageWidget.load_image(file_name, image, pixels)
@@ -113,7 +126,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             self.ui.rightImageWidget.update()
             self.recent_files.add_file(file_name)
         else:
-            self.log_message(f'ERROR: Image load failed.')
+            self.log_message(f"ERROR: Image load failed.")
         return result
 
     def log_message(self, message: str) -> None:
@@ -122,12 +135,15 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionAbout_Schmereo_triggered(self):
         QtWidgets.QMessageBox.about(
-            self, 'About Schmereo',
-            inspect.cleandoc(f'''
+            self,
+            "About Schmereo",
+            inspect.cleandoc(
+                f"""
             Schmereo stereograph restoration application.
             By Christopher M. Bruns
             Version {__version__}
-            '''),
+            """
+            ),
         )
 
     @QtCore.pyqtSlot()
@@ -174,9 +190,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
         file_name, file_type = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self,
-            caption='caption',
-            filter='Images (*.tif);;All Files (*)')
+            parent=self, caption="caption", filter="Images (*.tif);;All Files (*)"
+        )
         if file_name is None:
             return
         if len(file_name) < 1:
@@ -189,7 +204,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionReport_a_Problem_triggered(self):
-        url = QtCore.QUrl('https://github.com/cmbruns/schmereo/issues')
+        url = QtCore.QUrl("https://github.com/cmbruns/schmereo/issues")
         QtGui.QDesktopServices.openUrl(url)
 
     @QtCore.pyqtSlot()
@@ -197,9 +212,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         if not self.image_saver.can_save():
             return
         file_name, file_type = QtWidgets.QFileDialog.getSaveFileName(
-            parent=self,
-            caption='Save File(s)',
-            filter='3D Images (*.pns *.jps)',
+            parent=self, caption="Save File(s)", filter="3D Images (*.pns *.jps)"
         )
         if file_name is None:
             return
@@ -213,7 +226,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionZoom_Out_triggered(self):
-        self.zoom(amount=1.0/self.zoom_increment)
+        self.zoom(amount=1.0 / self.zoom_increment)
 
     @QtCore.pyqtSlot()
     def zoom(self, amount: float):

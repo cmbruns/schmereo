@@ -9,7 +9,9 @@ class MarkerManager(QObject):
         ama.toggled.connect(self.on_actionAdd_Marker_toggled)
         self.actionAdd_Marker = ama
         self.widgets = list(main_window.eye_widgets())
-        main_window.ui.actionHand_Mode.triggered.connect(self.on_actionHand_Mode_triggered)
+        main_window.ui.actionHand_Mode.triggered.connect(
+            self.on_actionHand_Mode_triggered
+        )
         for w in self.widgets:
             w.marker_added.connect(self.on_marker_added)
 

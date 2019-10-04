@@ -9,8 +9,8 @@ from schmereo.main_window import SchmereoMainWindow
 class SchmereoApplication(QtWidgets.QApplication):
     def __init__(self):
         super().__init__(sys.argv)
-        self.setOrganizationName('rotatingpenguin.com')
-        self.setApplicationName('schmereo')
+        self.setOrganizationName("rotatingpenguin.com")
+        self.setApplicationName("schmereo")
         main_win = SchmereoMainWindow()
         main_win.show()
         sys.exit(self.exec_())
@@ -33,5 +33,5 @@ def run_schmereo():
     SchmereoApplication()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_schmereo()

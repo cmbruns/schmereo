@@ -10,14 +10,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
-from schmereo.coord_sys import FractionalImagePos, WindowPos, CanvasPos, ImagePixelCoordinate
+from schmereo.coord_sys import (
+    FractionalImagePos,
+    WindowPos,
+    CanvasPos,
+    ImagePixelCoordinate,
+)
 from schmereo.image.single_image import SingleImage
 from schmereo.marker import MarkerSet
 
 
 def _make_cursor(file_name):
-    fh = pkg_resources.resource_stream('schmereo', file_name)
-    img = ImageQt(Image.open(fh).convert('RGBA'))
+    fh = pkg_resources.resource_stream("schmereo", file_name)
+    img = ImageQt(Image.open(fh).convert("RGBA"))
     cursor = QtGui.QCursor(QtGui.QPixmap.fromImage(img))
     return cursor
 
@@ -37,9 +42,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.setAcceptDrops(True)
         self.setMouseTracking(True)
         # TODO: cursor manager object
-        self.openhand_cursor = _make_cursor('cursor-openhand20.png')
-        self.grab_cursor = _make_cursor('cursor-closedhand20.png')
-        self.cross_cursor = _make_cursor('crosshair32.png')
+        self.openhand_cursor = _make_cursor("cursor-openhand20.png")
+        self.grab_cursor = _make_cursor("cursor-closedhand20.png")
+        self.cross_cursor = _make_cursor("crosshair32.png")
         self.drag_cursor = self.grab_cursor
         self.hover_cursor = self.openhand_cursor
         self.setCursor(self.hover_cursor)
@@ -75,12 +80,14 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if self.image.image is None:
             return
         mouse_pos = event.pos()
-        add_marker_action = QtWidgets.QAction(text='Add Marker Here', parent=self)
+        add_marker_action = QtWidgets.QAction(text="Add Marker Here", parent=self)
         add_marker_action.setData(mouse_pos)
-        add_marker_action.triggered.connect(partial(self.add_marker_from_action, add_marker_action))
+        add_marker_action.triggered.connect(
+            partial(self.add_marker_from_action, add_marker_action)
+        )
         menu = QtWidgets.QMenu(self)
         menu.addAction(add_marker_action)
-        menu.addAction(QtWidgets.QAction(text='Cancel [ESC]', parent=self))
+        menu.addAction(QtWidgets.QAction(text="Cancel [ESC]", parent=self))
         menu.exec(event.globalPos())
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
@@ -151,7 +158,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.previous_mouse = wp
         else:
             ip = self.image_from_window_qpoint(event.pos())
-            self.messageSent.emit(f'Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}', 3000)
+            self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         # drag detection
@@ -216,7 +223,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             mpc1 = CanvasPos.from_WindowPos(mouse_pos, *c_args)
             self.camera.zoom *= dScale
             mpc2 = CanvasPos.from_WindowPos(mouse_pos, *c_args)
-            self.camera.center += (mpc1 - mpc2)
+            self.camera.center += mpc1 - mpc2
         else:
             # zoom centered on widget center
             self.camera.zoom *= dScale
@@ -237,4 +244,4 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         )
 
     def resizeGL(self, width: int, height: int) -> None:
-        self.aspect_ratio = height/width
+        self.aspect_ratio = height / width

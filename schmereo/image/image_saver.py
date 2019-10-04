@@ -28,14 +28,16 @@ class EyeSaver(object):
             0,
             GL.GL_RGBA,
             GL.GL_UNSIGNED_BYTE,
-            None
+            None,
         )
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
-        GL.glFramebufferTexture(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, self.texture, 0)
+        GL.glFramebufferTexture(
+            GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, self.texture, 0
+        )
         GL.glDrawBuffers(1, [GL.GL_COLOR_ATTACHMENT0])
         if GL.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER) != GL.GL_FRAMEBUFFER_COMPLETE:
-            raise Exception('Incomplete framebuffer')
+            raise Exception("Incomplete framebuffer")
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         return fb
 
@@ -43,13 +45,9 @@ class EyeSaver(object):
         self.gl_widget.makeCurrent()
         GL.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, self.framebuffer)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        data = GL.glReadPixels(
-            0, 0,
-            *self.fb_size,
-            GL.GL_RGBA, GL.GL_UNSIGNED_BYTE
-        )
+        data = GL.glReadPixels(0, 0, *self.fb_size, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE)
         self.gl_widget.doneCurrent()
-        image = Image.frombytes('RGBA', self.fb_size, data)
+        image = Image.frombytes("RGBA", self.fb_size, data)
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
         return image
 
@@ -92,7 +90,7 @@ class ImageSaver(object):
         left_img = self.left_eye.get_image()
         right_img = self.right_eye.get_image()
         w, h = self.eye_size
-        combined_img = Image.new('RGBA', (w * 2, h))
+        combined_img = Image.new("RGBA", (w * 2, h))
         combined_img.paste(left_img, (0, 0))
         combined_img.paste(right_img, (w, 0))
-        combined_img.save(fp=file_name, format='png')  # TODO: output format logic
+        combined_img.save(fp=file_name, format="png")  # TODO: output format logic
