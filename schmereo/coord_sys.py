@@ -168,4 +168,4 @@ def fractionalImagePos_from_ImagePixelCoordinate(
     y -= aspect
     x = pos.x * 2.0 / image_size[0]
     x -= 1.0
-    return ImagePixelCoordinate(x, y)
+    return FractionalImagePos(x, y)

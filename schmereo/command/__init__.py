@@ -1,7 +1,28 @@
 from PyQt5.QtWidgets import QUndoCommand
 
-from schmereo.coord_sys import ImagePixelCoordinate
+from schmereo.coord_sys import ImagePixelCoordinate, FractionalImagePos
 from schmereo.image.image_widget import ImageWidget
+from schmereo.image.aligner import Aligner
+
+
+class AlignNowCommand(QUndoCommand):
+    def __init__(self, main_window, parent=None):
+        super().__init__(parent)
+        self.setText("align images")
+        self.aligner = Aligner(main_window)
+        self.main_window = main_window
+        self.old_centers = [w.image.transform.center[:] for w in main_window.eye_widgets()]
+
+    def redo(self):
+        self.aligner.align()
+        for w in self.main_window.eye_widgets():
+            w.update()
+
+    def undo(self):
+        for index, w in enumerate(self.main_window.eye_widgets()):
+            w.image.transform.center = FractionalImagePos(*self.old_centers[index])
+        for w in self.main_window.eye_widgets():
+            w.update()
 
 
 class ClearMarkersCommand(QUndoCommand):

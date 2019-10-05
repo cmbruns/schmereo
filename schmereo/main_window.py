@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QUndoStack
 
 from schmereo.camera import Camera
-from schmereo.command import ClearMarkersCommand
+from schmereo.command import AlignNowCommand, ClearMarkersCommand
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.image.aligner import Aligner
 from schmereo.image.image_saver import ImageSaver
@@ -168,9 +168,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
-        self.aligner.align()
-        for w in self.eye_widgets():
-            w.update()
+        self.undo_stack.push(AlignNowCommand(self))
 
     @QtCore.pyqtSlot()
     def on_actionClear_Markers_triggered(self):
