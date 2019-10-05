@@ -11,6 +11,7 @@ class SchmereoApplication(QtWidgets.QApplication):
         super().__init__(sys.argv)
         self.setOrganizationName("rotatingpenguin.com")
         self.setApplicationName("schmereo")
+        self.setApplicationDisplayName("Schmereo")
         main_win = SchmereoMainWindow()
         main_win.show()
         sys.exit(self.exec_())

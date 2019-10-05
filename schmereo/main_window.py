@@ -90,6 +90,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
         self.marker_manager = MarkerManager(self)
         self.aligner = Aligner(self)
+        self.project_file_name = None
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
@@ -125,10 +126,15 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         return result
 
     def load_project(self, file_name):
-        with open(file_name, 'r') as fh:
+        with open(file_name, "r") as fh:
             data = json.load(fh)
             self.from_dict(data)
+            for w in self.eye_widgets():
+                w.update()
             self.recent_files.add_file(file_name)
+            self.project_file_name = file_name
+            self.ui.actionSave.setEnabled(True)
+            self.setWindowFilePath(self.project_file_name)
             return True
 
     def log_message(self, message: str) -> None:
@@ -141,16 +147,19 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             "About Schmereo",
             inspect.cleandoc(
                 f"""
-            Schmereo stereograph restoration application.
-            By Christopher M. Bruns
-            Version {__version__}
-            """
+                Schmereo stereograph restoration application
+                Version: {__version__}
+                Author: Christopher M. Bruns
+                Code: https://github.com/cmbruns/schmereo
+                """
             ),
         )
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
         self.aligner.align()
+        for w in self.eye_widgets():
+            w.update()
 
     @QtCore.pyqtSlot()
     def on_actionClear_Markers_triggered(self):
@@ -162,8 +171,9 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
         file_name, file_type = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self, caption="Load Image",
-            filter="Projects and Images (*.json *.tif);;All Files (*)"
+            parent=self,
+            caption="Load Image",
+            filter="Projects and Images (*.json *.tif);;All Files (*)",
         )
         if file_name is None:
             return
@@ -179,6 +189,12 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionReport_a_Problem_triggered(self):
         url = QtCore.QUrl("https://github.com/cmbruns/schmereo/issues")
         QtGui.QDesktopServices.openUrl(url)
+
+    @QtCore.pyqtSlot()
+    def on_actionSave_triggered(self):
+        if self.project_file_name is None:
+            return
+        self.save_project_file(self.project_file_name)
 
     @QtCore.pyqtSlot()
     def on_actionSave_Images_triggered(self):
@@ -204,8 +220,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             return
         if len(file_name) < 1:
             return
-        with open(file_name, "w") as fh:
-            json.dump(self.to_dict(), fh, indent=2)
+        self.save_project_file(file_name)
 
     @QtCore.pyqtSlot()
     def on_actionZoom_In_triggered(self):
@@ -215,16 +230,20 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionZoom_Out_triggered(self):
         self.zoom(amount=1.0 / self.zoom_increment)
 
+    def save_project_file(self, file_name):
+        with open(file_name, "w") as fh:
+            json.dump(self.to_dict(), fh, indent=2)
+
     def to_dict(self):
         return {
-            "app": {'name': "schmereo", 'version': __version__},
+            "app": {"name": "schmereo", "version": __version__},
             "left": self.ui.leftImageWidget.to_dict(),
             "right": self.ui.rightImageWidget.to_dict(),
         }
 
     def from_dict(self, data):
-        self.ui.leftImageWidget.from_dict(data['left'])
-        self.ui.rightImageWidget.from_dict(data['right'])
+        self.ui.leftImageWidget.from_dict(data["left"])
+        self.ui.rightImageWidget.from_dict(data["right"])
 
     @QtCore.pyqtSlot()
     def zoom(self, amount: float):

@@ -54,13 +54,20 @@ class Aligner(object):
         # vertical offset per point -- right minus left
         dv = [x2[1] - x1[1] for x1, x2 in zip(points1, points2)]
         # best rotation per point
+        total_weight = 0.0
+        angle_sum = 0.0
         for i in range(len(points1)):
             dtheta, weight = self._rotation_from_dv(points1[i], dv[i])
-            print(f'point {i}: {dtheta * 180.0 / math.pi: 0.2f} degrees')
+            total_weight += weight
+            angle_sum += dtheta * weight
+            # print(f'point {i}: {dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
         for i in range(len(points2)):
             dtheta, weight = self._rotation_from_dv(points2[i], -dv[i])
-            print(f'point {i}: {-dtheta * 180.0 / math.pi: 0.2f} degrees')
-        return 0
+            total_weight += weight
+            angle_sum += -dtheta * weight
+            # print(f'point {i}: {-dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
+        final_angle = angle_sum / total_weight
+        return final_angle
 
     def _compute_translation(
         self, points1: List[ImagePixelCoordinate], points2: List[ImagePixelCoordinate]
@@ -80,7 +87,7 @@ class Aligner(object):
             return
         # TODO: rotation
         angle = self._compute_rotation(lm[:cm], rm[:cm])
-        print(angle)
+        print(f'total rotation = {angle * 180.0 / math.pi : 0.2f}\N{DEGREE SIGN}')
         # Translation
         c1 = self._compute_centroid(lm[:cm])
         c2 = self._compute_centroid(rm[:cm])
@@ -101,5 +108,3 @@ class Aligner(object):
         rc_i += change2
         rc_f = rwidg.fract_from_image(rc_i)
         rwidg.image.transform.center = rc_f
-        lwidg.update()
-        rwidg.update()
