@@ -10,6 +10,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
+from schmereo.command import AddMarkerCommand
 from schmereo.coord_sys import (
     FractionalImagePos,
     WindowPos,
@@ -56,6 +57,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self._add_marker_mode = False
         #
         self.image.messageSent.connect(self.messageSent)
+        self.undo_stack = None
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
         self.markers.add_marker(image_pos)
@@ -65,8 +67,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def add_marker_from_action(self, action):
         mouse_pos = action.data()
         image_pos = self.image_from_window_qpoint(mouse_pos)
-        self.add_marker(image_pos)
-        self.update()
+        self.undo_stack.push(AddMarkerCommand(self, image_pos))
 
     @property
     def camera(self):
@@ -143,7 +144,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.maybe_clicking = False
         if self._add_marker_mode and (event.button() == Qt.LeftButton):
             image_pos = self.image_from_window_qpoint(event.pos())
-            self.add_marker(image_pos)
+            self.undo_stack.push(AddMarkerCommand(self, image_pos))
 
     def mouseDoubleClickEvent(self, *args, **kwargs):
         self.maybe_clicking = False

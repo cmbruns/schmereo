@@ -1,8 +1,22 @@
 from PyQt5.QtWidgets import QUndoCommand
 
 from schmereo.coord_sys import ImagePixelCoordinate, FractionalImagePos
-from schmereo.image.image_widget import ImageWidget
 from schmereo.image.aligner import Aligner
+
+
+class AddMarkerCommand(QUndoCommand):
+    def __init__(self, widget: 'ImageWidget', marker_pos: ImagePixelCoordinate, parent=None):
+        super().__init__(parent)
+        self.setText("add marker")
+        self.widget = widget
+        self.marker_pos = marker_pos
+
+    def redo(self):
+        self.widget.add_marker(self.marker_pos)
+
+    def undo(self):
+        del self.widget.markers[-1]
+        self.widget.update()
 
 
 class AlignNowCommand(QUndoCommand):
@@ -26,7 +40,7 @@ class AlignNowCommand(QUndoCommand):
 
 
 class ClearMarkersCommand(QUndoCommand):
-    def __init__(self, left_widget: ImageWidget, right_widget: ImageWidget, parent=None):
+    def __init__(self, left_widget: 'ImageWidget', right_widget: 'ImageWidget', parent=None):
         super().__init__(parent)
         self.left_widget = left_widget
         self.right_widget = right_widget

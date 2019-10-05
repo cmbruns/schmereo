@@ -102,6 +102,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, undo_action)
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, redo_action)
         self.ui.menuEdit.insertSeparator(self.ui.actionAlign_Now)
+        for w in self.eye_widgets():
+            w.undo_stack = self.undo_stack
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):

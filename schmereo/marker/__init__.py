@@ -31,6 +31,10 @@ class MarkerSet(object):
     def __len__(self) -> int:
         return len(self.points)
 
+    def __delitem__(self, key):
+        del self.points[key]
+        self._dirty_array = True
+
     def add_marker(self, pos: ImagePixelCoordinate):
         self.points.append([*pos])
         self._dirty_array = True
