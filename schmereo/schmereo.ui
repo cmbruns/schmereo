@@ -262,9 +262,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
-    <addaction name="separator"/>
     <addaction name="actionAlign_Now"/>
     <addaction name="actionAdd_Marker"/>
     <addaction name="actionClear_Markers"/>
@@ -332,22 +329,6 @@
     <string>Report a Problem...</string>
    </property>
   </action>
-  <action name="actionUndo">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Undo</string>
-   </property>
-  </action>
-  <action name="actionRedo">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Redo</string>
-   </property>
-  </action>
   <action name="actionAdd_Marker">
    <property name="checkable">
     <bool>true</bool>
@@ -387,6 +368,16 @@
    </property>
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionnerp">
+   <property name="text">
+    <string>nerp</string>
+   </property>
+  </action>
+  <action name="actionnerp_2">
+   <property name="text">
+    <string>nerp</string>
    </property>
   </action>
  </widget>

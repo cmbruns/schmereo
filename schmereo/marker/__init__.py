@@ -1,4 +1,5 @@
 import pkg_resources
+from typing import List
 
 import numpy
 from OpenGL import GL
@@ -32,6 +33,11 @@ class MarkerSet(object):
 
     def add_marker(self, pos: ImagePixelCoordinate):
         self.points.append([*pos])
+        self._dirty_array = True
+
+    def add_markers(self, markers: List[ImagePixelCoordinate]):
+        for m in markers:
+            self.points.append([*m])
         self._dirty_array = True
 
     def clear(self):

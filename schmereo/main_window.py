@@ -7,8 +7,10 @@ from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QUndoStack
 
 from schmereo.camera import Camera
+from schmereo.command import ClearMarkersCommand
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.image.aligner import Aligner
 from schmereo.image.image_saver import ImageSaver
@@ -91,6 +93,15 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.marker_manager = MarkerManager(self)
         self.aligner = Aligner(self)
         self.project_file_name = None
+        #
+        self.undo_stack = QUndoStack(self)
+        undo_action = self.undo_stack.createUndoAction(self, '&Undo')
+        undo_action.setShortcuts(QKeySequence.Undo)
+        redo_action = self.undo_stack.createRedoAction(self, '&Redo')
+        redo_action.setShortcuts(QKeySequence.Redo)
+        self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, undo_action)
+        self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, redo_action)
+        self.ui.menuEdit.insertSeparator(self.ui.actionAlign_Now)
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
@@ -163,10 +174,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionClear_Markers_triggered(self):
-        for w in self.eye_widgets():
-            w.markers.clear()
-        for w in self.eye_widgets():
-            w.update()
+        self.undo_stack.push(ClearMarkersCommand(*self.eye_widgets()))
 
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
