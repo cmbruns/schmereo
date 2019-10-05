@@ -1,7 +1,7 @@
 import inspect
+import json
 import pkg_resources
 
-import numpy
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
+from schmereo.image.aligner import Aligner
 from schmereo.image.image_saver import ImageSaver
 from schmereo.marker.marker_manager import MarkerManager
 from schmereo.recent_file import RecentFileList
@@ -45,6 +46,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             [QKeySequence.ZoomIn, "Ctrl+="]
         )  # '=' so I don't need to press SHIFT
         self.ui.actionZoom_Out.setShortcut(QKeySequence.ZoomOut)
+        self.ui.actionSave_Project_As.setShortcut(QKeySequence.SaveAs)
         #
         self.recent_files = RecentFileList(
             open_file_slot=self.load_file,
@@ -87,6 +89,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         _set_action_icon(self.ui.actionHand_Mode, "schmereo", "cursor-openhand20.png")
         # tb.setDragEnabled(True)  # TODO: drag tool button to place marker
         self.marker_manager = MarkerManager(self)
+        self.aligner = Aligner(self)
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
@@ -106,21 +109,13 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def load_file(self, file_name: str) -> bool:
         result = False
         self.log_message(f"Loading file {file_name}...")
-        image = Image.open(file_name)
-        if image is None:
-            self.log_message(f"ERROR: Image load failed.")
-            return False
-        self.log_message(f"Processing image {file_name}...")
-        pixels = numpy.frombuffer(
-            buffer=image.convert("RGBA").tobytes(), dtype=numpy.ubyte
-        )
-        if pixels is None or len(pixels) < 1:
-            self.log_message(f"ERROR: Image processing failed.")
-            return False
-        self.log_message(f"Finished processing image {file_name}")
-        result = self.ui.leftImageWidget.load_image(file_name, image, pixels)
+        try:
+            image = Image.open(file_name)
+        except OSError:
+            return self.load_project(file_name)
+        result = self.ui.leftImageWidget.load_image(file_name)
         if result:
-            result = self.ui.rightImageWidget.load_image(file_name, image, pixels)
+            result = self.ui.rightImageWidget.load_image(file_name)
         if result:
             self.ui.leftImageWidget.update()
             self.ui.rightImageWidget.update()
@@ -128,6 +123,13 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         else:
             self.log_message(f"ERROR: Image load failed.")
         return result
+
+    def load_project(self, file_name):
+        with open(file_name, 'r') as fh:
+            data = json.load(fh)
+            self.from_dict(data)
+            self.recent_files.add_file(file_name)
+            return True
 
     def log_message(self, message: str) -> None:
         self.ui.statusbar.showMessage(message)
@@ -148,37 +150,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
-        lwidg = self.ui.leftImageWidget
-        rwidg = self.ui.rightImageWidget
-        lm = lwidg.markers
-        rm = rwidg.markers
-        cm = min(len(lm), len(rm))
-        if cm < 1:
-            return
-        # TODO: rotation
-        # compute translation
-        dy = 0.0
-        dx = 0.0
-        for i in range(cm):
-            dx += (rm[i][0] - lm[i][0]) / cm  # average  TODO: max? min?
-            dy += (rm[i][1] - lm[i][1]) / cm  # average
-        # convert current center difference to image pixels
-        c_c = CanvasPos(0, 0)  # center of image is canvas 0, 0
-        lc_i = lwidg.image_from_canvas(c_c)
-        rc_i = rwidg.image_from_canvas(c_c)
-        desired = ImagePixelCoordinate(dx, dy)
-        current = rc_i - lc_i
-        change = desired - current
-        # Apply half to each eye image
-        change2 = ImagePixelCoordinate(0.5 * change.x, 0.5 * change.y)
-        lc_i -= change2
-        lc_f = lwidg.fract_from_image(lc_i)
-        lwidg.image.transform.center = lc_f
-        rc_i += change2
-        rc_f = rwidg.fract_from_image(rc_i)
-        rwidg.image.transform.center = rc_f
-        lwidg.update()
-        rwidg.update()
+        self.aligner.align()
 
     @QtCore.pyqtSlot()
     def on_actionClear_Markers_triggered(self):
@@ -190,7 +162,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_actionOpen_triggered(self):
         file_name, file_type = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self, caption="caption", filter="Images (*.tif);;All Files (*)"
+            parent=self, caption="Load Image",
+            filter="Projects and Images (*.json *.tif);;All Files (*)"
         )
         if file_name is None:
             return
@@ -221,12 +194,37 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.image_saver.save_image(file_name, file_type)
 
     @QtCore.pyqtSlot()
+    def on_actionSave_Project_As_triggered(self):
+        file_name, file_type = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Save Project",
+            filter="Schmereo Projects (*.json);;All Files (*)",
+        )
+        if file_name is None:
+            return
+        if len(file_name) < 1:
+            return
+        with open(file_name, "w") as fh:
+            json.dump(self.to_dict(), fh, indent=2)
+
+    @QtCore.pyqtSlot()
     def on_actionZoom_In_triggered(self):
         self.zoom(amount=self.zoom_increment)
 
     @QtCore.pyqtSlot()
     def on_actionZoom_Out_triggered(self):
         self.zoom(amount=1.0 / self.zoom_increment)
+
+    def to_dict(self):
+        return {
+            "app": {'name': "schmereo", 'version': __version__},
+            "left": self.ui.leftImageWidget.to_dict(),
+            "right": self.ui.rightImageWidget.to_dict(),
+        }
+
+    def from_dict(self, data):
+        self.ui.leftImageWidget.from_dict(data['left'])
+        self.ui.rightImageWidget.from_dict(data['right'])
 
     @QtCore.pyqtSlot()
     def zoom(self, amount: float):

@@ -55,6 +55,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         #
         self._add_marker_mode = False
         #
+        self.image.messageSent.connect(self.messageSent)
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
         self.markers.add_marker(image_pos)
@@ -130,8 +131,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image.initializeGL()
         self.markers.initializeGL()
 
-    def load_image(self, file_name, image, pixels) -> bool:
-        return self.image.load_image(file_name, image, pixels)
+    def load_image(self, file_name) -> bool:
+        result = self.image.load_image(file_name)
+        return result
 
     marker_added = QtCore.pyqtSignal()
 
@@ -248,3 +250,10 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height / width
+
+    def to_dict(self):
+        return {'image': self.image.to_dict(), 'markers': self.markers.to_dict()}
+
+    def from_dict(self, data):
+        self.image.from_dict(data['image'])
+        self.markers.from_dict(data['markers'])

@@ -98,3 +98,11 @@ class MarkerSet(object):
         GL.glUniform1f(4, camera.zoom)
         GL.glUniform1f(5, window_aspect)
         GL.glDrawArrays(GL.GL_POINTS, 0, len(self.points))
+
+    def to_dict(self):
+        return [{'x': float(p[0]), 'y': float(p[1])} for p in self.points]
+
+    def from_dict(self, data):
+        self.clear()
+        for p in data:
+            self.add_marker(ImagePixelCoordinate(p['x'], p['y']))

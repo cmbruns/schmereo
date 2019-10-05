@@ -1,13 +1,18 @@
 import pkg_resources
+
+import numpy
 from OpenGL import GL
 from OpenGL.GL.shaders import compileProgram, compileShader
+from PIL import Image
+from PyQt5.QtCore import QObject, pyqtSignal
 
 from schmereo.camera import Camera
 from schmereo.coord_sys import ImageTransform
 
 
-class SingleImage(object):
+class SingleImage(QObject):
     def __init__(self, camera: Camera):
+        super().__init__()
         self.camera = camera
         self.vao = None
         self.shader = None
@@ -36,14 +41,31 @@ class SingleImage(object):
         )
         self.texture = GL.glGenTextures(1)
 
-    def load_image(self, file_name, image, pixels) -> bool:
+    def load_image(self, file_name) -> bool:
         if file_name == self.file_name:
             return True
+        image = Image.open(file_name)
+        if image is None:
+            self.log_message(f"ERROR: Image load failed.")
+            return False
+        self.log_message(f"Processing image {file_name}...")
+        pixels = numpy.frombuffer(
+            buffer=image.convert("RGBA").tobytes(), dtype=numpy.ubyte
+        )
+        if pixels is None or len(pixels) < 1:
+            self.log_message(f"ERROR: Image processing failed.")
+            return False
+        self.log_message(f"Finished processing image {file_name}")
         self.file_name = file_name
         self.pixels = pixels
         self.image = image
         self.image_needs_upload = True
         return True
+
+    def log_message(self, message):
+        self.messageSent.emit(message, 5000)
+
+    messageSent = pyqtSignal(str, int)
 
     def paintGL(self, aspect_ratio, camera=None) -> None:
         if self.pixels is None:
@@ -86,3 +108,16 @@ class SingleImage(object):
         GL.glUniform2fv(self.canvas_center_location, 1, camera.center.bytes)
         GL.glUniform2fv(self.image_center_location, 1, self.transform.center.bytes)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
+
+    def size(self):
+        return self.image.width, self.image.height
+
+    def to_dict(self):
+        return {
+            'file_name': self.file_name,
+            'transform': self.transform.to_dict(self),
+        }
+
+    def from_dict(self, data):
+        self.load_image(data['file_name'])
+        self.transform.from_dict(data['transform'], self)

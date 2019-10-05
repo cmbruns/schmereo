@@ -10,17 +10,18 @@ Phase 1: (DONE)
 
 Phase 2:
   * clear markers (DONE)
-  * add markers from menu/toolbar
-    * hand tool button and marker tool button
-    * pop message after click in maker mode on wrong eye view
+  * add markers from menu/toolbar (DONE)
+    * hand tool button and marker tool button (DONE)
+    * pop message after click in maker mode on wrong eye view (NO)
     * debug exact marker display after alignment (DONE)
-    * clear add_marker mode after setting second point, at the latest
+    * clear add_marker mode after setting second point, at the latest (DONE)
   * update rotation
   * create tool for splitting pns, jps
   * update stereo window
   * use pyinstaller
 
 Phase 3:
+  * save project file
   * QAbstractTable/ItemModel for markers with GUI
   * match brightness / contrast
   * color marker to be matched in opposing view

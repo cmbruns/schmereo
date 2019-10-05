@@ -237,6 +237,8 @@
     <addaction name="actionOpen"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_Project_As"/>
     <addaction name="actionSave_Images"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -353,7 +355,7 @@
    <property name="icon">
     <iconset>
      <normaloff>schmereo/marker/crosshair64.png</normaloff>
-     <normalon>schmereo/marker/crosshair64blue.png</normalon>marker/crosshair64.png</iconset>
+     <normalon>schmereo/marker/crosshair64blue.png</normalon>schmereo/marker/crosshair64.png</iconset>
    </property>
    <property name="text">
     <string>Add Marker</string>
@@ -365,13 +367,23 @@
   <action name="actionHand_Mode">
    <property name="icon">
     <iconset>
-     <normaloff>schmereo/cursor-openhand.png</normaloff>cursor-openhand.png</iconset>
+     <normaloff>schmereo/cursor-openhand.png</normaloff>schmereo/cursor-openhand.png</iconset>
    </property>
    <property name="text">
     <string>Hand Mode</string>
    </property>
    <property name="toolTip">
     <string>Use the mouse to pan and zoom</string>
+   </property>
+  </action>
+  <action name="actionSave_Project_As">
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

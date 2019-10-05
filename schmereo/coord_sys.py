@@ -42,6 +42,13 @@ class PosBase(object):
     def bytes(self) -> numpy.array:
         return self._pos
 
+    def to_dict(self):
+        return {'x': float(self.x), 'y': float(self.y)}
+
+    def from_dict(self, data):
+        self._pos[0] = data['x']
+        self._pos[1] = data['y']
+
     @property
     def x(self) -> float:
         return self._pos[0]
@@ -142,6 +149,15 @@ class ImageTransform(object):
 
     def __init__(self):
         self.center = FractionalImagePos(0, 0)
+
+    def to_dict(self, image):
+        ipc = ImagePixelCoordinate.from_FractionalImagePos(self.center, image.size())
+        return {'center': ipc.to_dict()}
+
+    def from_dict(self, data, image):
+        ipc = ImagePixelCoordinate.from_FractionalImagePos(self.center, image.size())
+        ipc.from_dict(data['center'])
+        self.center = FractionalImagePos.from_ImagePixelCoordinate(ipc, image.size())
 
 
 def fractionalImagePos_from_ImagePixelCoordinate(
