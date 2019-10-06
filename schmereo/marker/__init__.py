@@ -107,6 +107,7 @@ class MarkerSet(object):
         GL.glUniform2f(3, *camera.center)
         GL.glUniform1f(4, camera.zoom)
         GL.glUniform1f(5, window_aspect)
+        GL.glUniform1f(6, transform.rotation)
         GL.glDrawArrays(GL.GL_POINTS, 0, len(self.points))
 
     def to_dict(self):

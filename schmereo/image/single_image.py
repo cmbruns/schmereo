@@ -23,6 +23,7 @@ class SingleImage(QObject):
         self.zoom_location = 1
         self.canvas_center_location = 2
         self.image_center_location = 3
+        self.rotation_location = 4
         self.file_name = None
         self.pixels = None
         self.transform = ImageTransform()
@@ -107,6 +108,7 @@ class SingleImage(QObject):
         GL.glUniform1f(self.zoom_location, camera.zoom)
         GL.glUniform2fv(self.canvas_center_location, 1, camera.center.bytes)
         GL.glUniform2fv(self.image_center_location, 1, self.transform.center.bytes)
+        GL.glUniform1f(self.rotation_location, self.transform.rotation)
         GL.glDrawArrays(GL.GL_TRIANGLE_STRIP, 0, 4)
 
     def size(self):

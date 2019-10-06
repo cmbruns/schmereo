@@ -2,6 +2,7 @@
 Use thin wrapper classes to keep different coordinate frames semantically distinct
 """
 
+import math
 from typing import TypeVar
 
 from PyQt5 import QtCore
@@ -43,11 +44,11 @@ class PosBase(object):
         return self._pos
 
     def to_dict(self):
-        return {'x': float(self.x), 'y': float(self.y)}
+        return {"x": float(self.x), "y": float(self.y)}
 
     def from_dict(self, data):
-        self._pos[0] = data['x']
-        self._pos[1] = data['y']
+        self._pos[0] = data["x"]
+        self._pos[1] = data["y"]
 
     @property
     def x(self) -> float:
@@ -109,8 +110,12 @@ class FractionalImagePos(PosBase):
     def from_CanvasPos(
         cls, pos: CanvasPos, transform: "ImageTransform"
     ) -> "FractionalImagePos":
-        x = pos.x + transform.center.x
-        y = pos.y + transform.center.y
+        cr = math.cos(transform.rotation)
+        sr = math.sin(transform.rotation)
+        rot = numpy.array(((cr, sr), (-sr, cr)), dtype=numpy.float32)
+        x, y = rot @ pos[:]
+        x += transform.center.x
+        y += transform.center.y
         # TODO: rotation, scale
         return FractionalImagePos(x, y)
 
@@ -149,15 +154,17 @@ class ImageTransform(object):
 
     def __init__(self):
         self.center = FractionalImagePos(0, 0)
+        self.rotation = math.radians(30.0)  # radians
 
     def to_dict(self, image):
         ipc = ImagePixelCoordinate.from_FractionalImagePos(self.center, image.size())
-        return {'center': ipc.to_dict()}
+        return {"center": ipc.to_dict(), "rotation": self.rotation}
 
     def from_dict(self, data, image):
         ipc = ImagePixelCoordinate.from_FractionalImagePos(self.center, image.size())
-        ipc.from_dict(data['center'])
+        ipc.from_dict(data["center"])
         self.center = FractionalImagePos.from_ImagePixelCoordinate(ipc, image.size())
+        self.rotation = data.get("rotation", 0)
 
 
 def fractionalImagePos_from_ImagePixelCoordinate(

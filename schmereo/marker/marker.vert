@@ -7,6 +7,7 @@ layout(location=2) uniform vec2 transformCenter = vec2(0.0, 0.0);  // in fip? TO
 layout(location=3) uniform vec2 cameraCenter = vec2(0.0, 0.0);  // in canvas
 layout(location=4) uniform float cameraZoom = 1.0;
 layout(location=5) uniform float windowAspect = 1.0;
+layout(location=6) uniform float transformRotation = 0.0;
 
 void main()
 {
@@ -18,7 +19,13 @@ void main()
     fip -= vec2(1, imageAspect);
 
     // convert fractional image position to canvas position
-    vec2 cp = fip - transformCenter;  // TODO: rotation, scale
+    vec2 cp = fip - transformCenter;  // TODO: scale
+    float cr = cos(transformRotation);
+    float sr = sin(transformRotation);
+    mat2 rot = mat2( cr, sr,
+                    -sr, cr);
+    cp = rot * cp;
+
 
     // convert canvas position to ndc
     vec2 ndc = cp - cameraCenter;
