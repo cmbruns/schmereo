@@ -241,6 +241,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def save_project_file(self, file_name):
         with open(file_name, "w") as fh:
             json.dump(self.to_dict(), fh, indent=2)
+        self.recent_files.add_file(file_name)
 
     def to_dict(self):
         return {
