@@ -15,25 +15,26 @@ Phase 2:
     * pop message after click in maker mode on wrong eye view (NO)
     * debug exact marker display after alignment (DONE)
     * clear add_marker mode after setting second point, at the latest (DONE)
+    * tool button for adding markers (DONE)
+  * save project file (DONE)
+  * undo/redo (DONE)
   * update rotation
   * create tool for splitting pns, jps
   * update stereo window
   * use pyinstaller
 
 Phase 3:
-  * save project file
-  * QAbstractTable/ItemModel for markers with GUI
-  * match brightness / contrast
-  * color marker to be matched in opposing view
   * drag markers to move position; also keyboard controls on selected marker
+  * choice of smooth vs pixelated
+  * match brightness / contrast
+  * QAbstractTable/ItemModel for markers with GUI
+  * color marker to be matched in opposing view
   * import jps, pns, mpo file formats
   * cubic interpolation
   * unlink cameras
-  * choice of smooth vs pixelated
   * export jps, pns, mpo file formats
   * log alignment results to status bar
   * disable export, align menus at first
-  * tool button for adding markers
 
 Phase 4:
   * update scale
