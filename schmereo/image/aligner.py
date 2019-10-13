@@ -1,4 +1,5 @@
 import math
+import traceback
 from typing import List
 
 from schmereo import CanvasPos
@@ -30,15 +31,15 @@ class Aligner(object):
         theta = math.atan2(y, x)
         r = (x * x + y * y) ** 0.5
         y2 = y + dv
-        theta2 = math.asin(y2/r)  # range -pi/2 -> +pi/2
+        theta2 = math.asin(y2 / r)  # range -pi/2 -> +pi/2
         if abs(theta) > math.pi / 2:  # TODO: might not be exactly the right test
             theta2 = math.pi - theta2
         dtheta = theta2 - theta
         while dtheta > math.pi:
-            dtheta -= 2*math.pi
+            dtheta -= 2 * math.pi
         while dtheta < -math.pi:
-            dtheta += 2*math.pi
-        weight = r * (math.cos(theta/2.0) + 1)
+            dtheta += 2 * math.pi
+        weight = r * (math.cos(theta / 2.0) + 1)
         return dtheta, weight
 
     def _compute_rotation(
@@ -57,15 +58,25 @@ class Aligner(object):
         total_weight = 0.0
         angle_sum = 0.0
         for i in range(len(points1)):
-            dtheta, weight = self._rotation_from_dv(points1[i], dv[i])
-            total_weight += weight
-            angle_sum += dtheta * weight
-            # print(f'point {i}: {dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
+            try:
+                dtheta, weight = self._rotation_from_dv(points1[i], dv[i])
+                total_weight += weight
+                angle_sum += dtheta * weight
+                # print(f'point {i}: {dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
+            except ValueError as ve:
+                print(f"ERROR: rotation error for point1 {i} {points1[i]} dv: {dv[i]}")
+                traceback.print_exc()  # TODO: debug this
+                pass  # ???
         for i in range(len(points2)):
-            dtheta, weight = self._rotation_from_dv(points2[i], -dv[i])
-            total_weight += weight
-            angle_sum += -dtheta * weight
-            # print(f'point {i}: {-dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
+            try:
+                dtheta, weight = self._rotation_from_dv(points2[i], -dv[i])
+                total_weight += weight
+                angle_sum += -dtheta * weight
+                # print(f'point {i}: {-dtheta * 180.0 / math.pi: 0.2f} degrees {weight}')
+            except ValueError as ve:
+                print(f"ERROR: rotation error for point2 {i} {points2[i]} dv: {-dv[i]}")
+                traceback.print_exc()  # TODO: debug this
+                pass  # ???
         final_angle = angle_sum / total_weight
         return final_angle
 
@@ -87,7 +98,7 @@ class Aligner(object):
             return
         # TODO: rotation
         angle = self._compute_rotation(lm[:cm], rm[:cm])
-        print(f'total rotation = {angle * 180.0 / math.pi : 0.2f}\N{DEGREE SIGN}')
+        print(f"total rotation = {angle * 180.0 / math.pi : 0.2f}\N{DEGREE SIGN}")
         # Translation
         c1 = self._compute_centroid(lm[:cm])
         c2 = self._compute_centroid(rm[:cm])
