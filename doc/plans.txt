@@ -18,12 +18,14 @@ Phase 2:
     * tool button for adding markers (DONE)
   * save project file (DONE)
   * undo/redo (DONE)
-  * update rotation
+  * update rotation (DONE)
+  * update output window
   * create tool for splitting pns, jps
-  * update stereo window
   * use pyinstaller
 
 Phase 3:
+  * (fast) swap eyes gesture
+  * set marker(s) for stereo window
   * drag markers to move position; also keyboard controls on selected marker
   * choice of smooth vs pixelated
   * match brightness / contrast
