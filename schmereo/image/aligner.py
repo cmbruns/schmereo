@@ -98,7 +98,11 @@ class Aligner(object):
             return
         # TODO: rotation
         angle = self._compute_rotation(lm[:cm], rm[:cm])
-        print(f"total rotation = {angle * 180.0 / math.pi : 0.2f}\N{DEGREE SIGN}")
+        old_angle = lwidg.image.transform.rotation - rwidg.image.transform.rotation
+        d_angle = angle - old_angle
+        print(f"total rotation = {math.degrees(d_angle) : 0.2f}\N{DEGREE SIGN}")
+        lwidg.image.transform.rotation += d_angle/2.0
+        rwidg.image.transform.rotation -= d_angle/2.0
         # Translation
         c1 = self._compute_centroid(lm[:cm])
         c2 = self._compute_centroid(rm[:cm])
