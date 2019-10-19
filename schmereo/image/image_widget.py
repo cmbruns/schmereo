@@ -62,6 +62,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.undo_stack = None
         #
         self.clip_box = ClipBox()
+        self.painter = QtGui.QPainter()
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
         self.markers.add_marker(image_pos)
@@ -127,8 +128,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
 
     def image_from_window_qpoint(self, q_point: QtCore.QPoint) -> ImagePixelCoordinate:
         wp = WindowPos.from_QPoint(q_point)
-        c_args = (self.camera, self.size())
-        cp = CanvasPos.from_WindowPos(wp, *c_args)
+        cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
         return self.image_from_canvas(cp)
 
     def initializeGL(self) -> None:
@@ -154,18 +154,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.maybe_clicking = False
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        if self.is_dragging:
-            if not event.buttons() & Qt.LeftButton:
-                return
-            wp = WindowPos.from_QPoint(event.pos())
-            c_args = (self.camera, self.size())
-            cp = CanvasPos.from_WindowPos(wp, *c_args)
-            if self.previous_mouse is not None:
-                dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, *c_args)
-                self.camera.center -= dPosC
-                self.camera.notify()  # update UI now
+        if self.is_dragging and not event.buttons() & Qt.LeftButton:
+            return
+        wp = WindowPos.from_QPoint(event.pos())
+        if self.is_dragging and self.previous_mouse is None:
             self.previous_mouse = wp
+            return
+        cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
+        if self.is_dragging:
+            dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, self.camera, self.size())
+            self.camera.center -= dPosC
+            self.previous_mouse = wp
+            self.camera.notify()  # update UI now
         else:
+            self.clip_box.check_hover(cp)
             ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
 
@@ -174,7 +176,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         # drag detection
         self.is_dragging = True
-        self.previous_mouse = WindowPos.from_QPoint(event.pos())
+        wp = WindowPos.from_QPoint(event.pos())
+
+        self.previous_mouse = wp
         # click detection
         self.maybe_clicking = True
         self.mouse_press_pos = QtCore.QPoint(event.pos().x(), event.pos().y())
@@ -240,6 +244,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.camera.notify()
 
     def paintGL(self) -> None:
+        self.painter.beginNativePainting()
         self.image.paintGL(self.aspect_ratio)
         img = self.image.image
         if img:
@@ -252,7 +257,11 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             camera=self.camera,
             window_aspect=self.aspect_ratio,
         )
-        self.clip_box.paint_gl(self)
+        self.painter.endNativePainting()
+        if img:
+            assert self.painter.begin(self)
+            self.clip_box.paint_gl(window_size=self.size(), camera=self.camera, painter=self.painter)
+            self.painter.end()
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height / width

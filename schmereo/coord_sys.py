@@ -39,6 +39,9 @@ class PosBase(object):
         r = self._pos - other._pos
         return self.__class__(x=r[0], y=r[1])
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.x}, {self.y})"
+
     @property
     def bytes(self) -> numpy.array:
         return self._pos
@@ -73,6 +76,10 @@ class WindowPos(PosBase):
     def from_QPoint(cls, qpoint: QtCore.QPoint) -> "WindowPos":
         return WindowPos(x=qpoint.x(), y=qpoint.y())
 
+    @classmethod
+    def from_CanvasPos(self, pos: "CanvasPos", camera: "schmereo.Camera", size: QtCore.QSize) -> "WindowPos":
+        return pos.to_WindowPos()
+
 
 class CanvasPos(PosBase):
     """
@@ -95,6 +102,15 @@ class CanvasPos(PosBase):
         y *= scale
         y += camera.center.y
         return CanvasPos(x=x, y=y)
+
+    def to_WindowPos(self, camera: "schmereo.Camera", size: QtCore.QSize) -> WindowPos:
+        x = self.x - camera.center.x
+        y = self.y - camera.center.y
+        #
+        x, y = [c / scale for c in (x, y)]
+        x += size.width() / 2.0
+        y += size.height() / 2.0
+        return WindowPos(x, y)
 
 
 class FractionalImagePos(PosBase):

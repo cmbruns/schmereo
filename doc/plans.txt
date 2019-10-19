@@ -1,4 +1,4 @@
-Roadmap for shmereo
+Road map for schmereo
 
 Phase 1: (DONE)
   * drag and drop image (DONE)
@@ -25,6 +25,7 @@ Phase 2:
 
 Phase 3:
   * (fast) swap eyes gesture
+  * weight markers by local density
   * set marker(s) for stereo window
   * drag markers to move position; also keyboard controls on selected marker
   * choice of smooth vs pixelated
