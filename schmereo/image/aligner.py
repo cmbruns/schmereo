@@ -96,7 +96,7 @@ class Aligner(object):
         cm = min(len(lm), len(rm))
         if cm < 1:
             return
-        # TODO: rotation
+        # TODO: apply existing rotation before computing new rotation and center
         angle = self._compute_rotation(lm[:cm], rm[:cm])
         old_angle = lwidg.image.transform.rotation - rwidg.image.transform.rotation
         d_angle = angle - old_angle

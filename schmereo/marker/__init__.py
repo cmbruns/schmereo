@@ -95,6 +95,9 @@ class MarkerSet(object):
         if not self._dirty_array and self._array is None:
             return
         GL.glBindVertexArray(self.vao)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vbo)
+        GL.glEnable(GL.GL_BLEND)
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
         if self._dirty_array:
             self._array = numpy.array(self.points, dtype=numpy.float32)
             GL.glBufferData(GL.GL_ARRAY_BUFFER, self._array, GL.GL_STATIC_DRAW)

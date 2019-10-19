@@ -4,12 +4,14 @@ import pkg_resources
 from typing import Optional
 
 import numpy
+from OpenGL import GL
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
+from schmereo.clip_box import ClipBox
 from schmereo.command import AddMarkerCommand
 from schmereo.coord_sys import (
     FractionalImagePos,
@@ -58,6 +60,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         #
         self.image.messageSent.connect(self.messageSent)
         self.undo_stack = None
+        #
+        self.clip_box = ClipBox()
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
         self.markers.add_marker(image_pos)
@@ -248,6 +252,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             camera=self.camera,
             window_aspect=self.aspect_ratio,
         )
+        self.clip_box.paint_gl(self)
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height / width

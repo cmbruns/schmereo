@@ -29,7 +29,7 @@ def run_schmereo():
     gl_format.setMajorVersion(4)
     gl_format.setMinorVersion(6)
     gl_format.setProfile(QtGui.QSurfaceFormat.CoreProfile)
-    gl_format.setSamples(4)
+    gl_format.setSamples(8)
     QtGui.QSurfaceFormat.setDefaultFormat(gl_format)
     SchmereoApplication()
 
