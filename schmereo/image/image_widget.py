@@ -167,7 +167,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.previous_mouse = wp
             self.camera.notify()  # update UI now
         else:
-            self.clip_box.check_hover(cp)
+            self.clip_box.check_hover(cp, tolerance = 10.0 / (self.size().width() * self.camera.zoom))
             ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
 

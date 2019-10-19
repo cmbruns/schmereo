@@ -14,8 +14,20 @@ class ClipBox(object):
         self.pen = QPen(QColor(0x40, 0x80, 0xFF, 0x90), 3)
         self.pen.setStyle(Qt.DashLine)
 
-    def check_hover(self, pos: CanvasPos):
-        pass  # TODO:
+    def check_hover(self, pos: CanvasPos, tolerance: float) -> None:
+        bottom = self.height / 2.0
+        top = -bottom
+        right = self.width / 2.0
+        left = -right
+        for edge in top, bottom:
+            d = abs(edge - pos.y)
+            if d < tolerance:
+                print(f"hover {d}")
+        for edge in left, right:
+            d = abs(edge - pos.x)
+            if d < tolerance:
+                print(f"hover {d}")
+        # TODO:
 
     def paint_gl(self, window_size: QSize, camera: Camera, painter: QPainter) -> None:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
