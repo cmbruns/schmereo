@@ -17,14 +17,8 @@ class SchmereoApplication(QtWidgets.QApplication):
         sys.exit(self.exec_())
 
 
-def exception_hook(exctype, value, traceback):
-    sys._excepthook(exctype, value, traceback)
-    sys.exit(1)
-
-
 def run_schmereo():
-    sys._excepthook = sys.excepthook
-    sys.excepthook = exception_hook
+    import schmereo.excepthook
     gl_format = QtGui.QSurfaceFormat()
     gl_format.setMajorVersion(4)
     gl_format.setMinorVersion(6)

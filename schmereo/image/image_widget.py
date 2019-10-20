@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
-from schmereo.clip_box import ClipBox
+from schmereo.clip_box import ClipBox, Edge
 from schmereo.command import AddMarkerCommand
 from schmereo.coord_sys import (
     FractionalImagePos,
@@ -61,7 +61,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image.messageSent.connect(self.messageSent)
         self.undo_stack = None
         #
-        self.clip_box = ClipBox()
+        self.clip_box = ClipBox(parent=self)
         self.painter = QtGui.QPainter()
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
@@ -167,7 +167,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             self.previous_mouse = wp
             self.camera.notify()  # update UI now
         else:
-            self.clip_box.check_hover(cp, tolerance = 10.0 / (self.size().width() * self.camera.zoom))
+            edge = self.clip_box.check_hover(cp, tolerance=20.0 / (self.size().width() * self.camera.zoom))
+            if edge == Edge.NONE:
+                self.setCursor(self.hover_cursor)
+            elif edge in (Edge.TOP, Edge.BOTTOM):
+                self.setCursor(Qt.SizeVerCursor)
+            elif edge in (Edge.LEFT, Edge.RIGHT):
+                self.setCursor(Qt.SizeHorCursor)
+            elif edge in (Edge.TOP_LEFT, Edge.BOTTOM_RIGHT):
+                self.setCursor(Qt.SizeFDiagCursor)
+            elif edge in (Edge.TOP_RIGHT, Edge.BOTTOM_LEFT):
+                self.setCursor(Qt.SizeBDiagCursor)
+            else:
+                self.setCursor(self.hover_cursor)
+            #
             ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
 
