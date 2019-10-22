@@ -1,4 +1,5 @@
 import datetime
+import enum
 from functools import partial
 import pkg_resources
 from typing import Optional
@@ -30,6 +31,13 @@ def _make_cursor(file_name):
     return cursor
 
 
+class DragMode(enum.Enum):
+    NONE = 1,
+    PAN = 2,
+    CLIP_BOX = 3,
+    MARKER = 4,  # TODO:
+
+
 class ImageWidget(QtWidgets.QOpenGLWidget):
     def __init__(self, parent=None, camera=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
@@ -39,7 +47,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.markers = MarkerSet(camera=camera)
         self.aspect_ratio = 1.0
         # TODO: drag detection object
-        self.is_dragging = False
+        self.drag_mode = DragMode.NONE
+        self.latent_drag_mode = DragMode.PAN
+        self.clip_box_edge = Edge.NONE
         self.previous_mouse: Optional[WindowPos] = None
         #
         self.setAcceptDrops(True)
@@ -154,32 +164,39 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.maybe_clicking = False
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent):
-        if self.is_dragging and not event.buttons() & Qt.LeftButton:
+        if self.drag_mode != DragMode.NONE and not event.buttons() & Qt.LeftButton:
             return
         wp = WindowPos.from_QPoint(event.pos())
-        if self.is_dragging and self.previous_mouse is None:
+        if self.drag_mode != DragMode.NONE and self.previous_mouse is None:
             self.previous_mouse = wp
             return
         cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
-        if self.is_dragging:
+        if self.drag_mode != DragMode.NONE:
             dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, self.camera, self.size())
-            self.camera.center -= dPosC
             self.previous_mouse = wp
-            self.camera.notify()  # update UI now
-        else:
-            edge = self.clip_box.check_hover(cp, tolerance=20.0 / (self.size().width() * self.camera.zoom))
-            if edge == Edge.NONE:
+            # TODO: marker drage takes top priority
+            # TODO: clip box drag takes second priority
+            if self.drag_mode == DragMode.CLIP_BOX:
+                self.clip_box.adjust(self.clip_box_edge, dPosC)
+                self.clip_box.notify()
+            elif self.drag_mode == DragMode.PAN:
+                self.camera.center -= dPosC
+                self.camera.notify()  # update UI now
+        else:  # just hovering, not dragging
+            self.clip_box_edge = self.clip_box.check_hover(cp, tolerance=20.0 / (self.size().width() * self.camera.zoom))
+            if self.clip_box_edge == Edge.NONE:
                 self.setCursor(self.hover_cursor)
-            elif edge in (Edge.TOP, Edge.BOTTOM):
-                self.setCursor(Qt.SizeVerCursor)
-            elif edge in (Edge.LEFT, Edge.RIGHT):
-                self.setCursor(Qt.SizeHorCursor)
-            elif edge in (Edge.TOP_LEFT, Edge.BOTTOM_RIGHT):
-                self.setCursor(Qt.SizeFDiagCursor)
-            elif edge in (Edge.TOP_RIGHT, Edge.BOTTOM_LEFT):
-                self.setCursor(Qt.SizeBDiagCursor)
+                self.latent_drag_mode = DragMode.PAN
             else:
-                self.setCursor(self.hover_cursor)
+                self.latent_drag_mode = DragMode.CLIP_BOX
+                if self.clip_box_edge in (Edge.TOP, Edge.BOTTOM):
+                    self.setCursor(Qt.SizeVerCursor)
+                elif self.clip_box_edge in (Edge.LEFT, Edge.RIGHT):
+                    self.setCursor(Qt.SizeHorCursor)
+                elif self.clip_box_edge in (Edge.TOP_LEFT, Edge.BOTTOM_RIGHT):
+                    self.setCursor(Qt.SizeFDiagCursor)
+                elif self.clip_box_edge in (Edge.TOP_RIGHT, Edge.BOTTOM_LEFT):
+                    self.setCursor(Qt.SizeBDiagCursor)
             #
             ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
@@ -188,9 +205,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if not event.buttons() & Qt.LeftButton:
             return
         # drag detection
-        self.is_dragging = True
+        self.drag_mode = self.latent_drag_mode
         wp = WindowPos.from_QPoint(event.pos())
-
         self.previous_mouse = wp
         # click detection
         self.maybe_clicking = True
@@ -206,7 +222,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if self.drag_cursor != self.hover_cursor:
             self.setCursor(self.hover_cursor)
         # drag detection
-        self.is_dragging = False
+        self.drag_mode = DragMode.NONE
         self.previous_mouse = None
         # click detection
         d2 = 1000

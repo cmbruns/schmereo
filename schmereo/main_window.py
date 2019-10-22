@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QUndoStack
 
 from schmereo.camera import Camera
+from schmereo.clip_box import ClipBox
 from schmereo.command import AlignNowCommand, ClearMarkersCommand
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate, CanvasPos
 from schmereo.image.aligner import Aligner
@@ -102,8 +103,11 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, undo_action)
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, redo_action)
         self.ui.menuEdit.insertSeparator(self.ui.actionAlign_Now)
+        clip_box = ClipBox(parent=self)
         for w in self.eye_widgets():
             w.undo_stack = self.undo_stack
+            w.clip_box = clip_box
+            clip_box.changed.connect(w.update)
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):

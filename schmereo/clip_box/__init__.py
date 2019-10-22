@@ -25,18 +25,38 @@ class Edge(enum.IntFlag):
 class ClipBox(QObject):
     def __init__(self, width=1.0, height=1.0, parent=None):
         super().__init__(parent=parent)
-        self.width = width  # in Canvas coordinates
-        self.height = height
+        self.left = -0.5 * width
+        self.right = 0.5 * width
+        self.top = -0.5 * height
+        self.bottom = 0.5 * height
         self.pen = QPen(QColor(0x40, 0x80, 0xFF, 0x90), 3)
         self.pen.setStyle(Qt.DashLine)
         self.pen.setJoinStyle(Qt.RoundJoin)
         self._is_hovered = False
+        self._dirty = False
+
+    def adjust(self, edge: Edge, d_pos: CanvasPos):
+        if Edge == Edge.NONE:
+            return
+        if d_pos.x == d_pos.y == 0:
+            return
+        self._dirty = True
+        if edge & Edge.LEFT:
+            self.left += d_pos.x
+        elif edge & Edge.RIGHT:
+            self.right += d_pos.x
+        if edge & Edge.TOP:
+            self.top += d_pos.y
+        elif edge & Edge.BOTTOM:
+            self.bottom += d_pos.y
+
+    changed = QtCore.pyqtSignal()
 
     def check_hover(self, pos: CanvasPos, tolerance: float) -> Edge:
         # Vertical
         v_edge = Edge.NONE
-        dtop = abs(-self.height / 2.0 - pos.y)
-        dbottom = abs(self.height / 2.0 - pos.y)
+        dtop = abs(self.top - pos.y)
+        dbottom = abs(self.bottom - pos.y)
         if dtop < dbottom and dtop <= tolerance:
             v_edge = Edge.TOP
         elif dbottom <= tolerance:
@@ -45,8 +65,8 @@ class ClipBox(QObject):
             v_edge = Edge.NONE
         # Horizontal
         h_edge = Edge.NONE
-        dleft = abs(-self.width / 2.0 - pos.x)
-        dright = abs(self.width / 2.0 - pos.x)
+        dleft = abs(self.left - pos.x)
+        dright = abs(self.right - pos.x)
         if dleft < dright and dleft <= tolerance:
             h_edge = Edge.LEFT
         elif dright <= tolerance:
@@ -67,12 +87,21 @@ class ClipBox(QObject):
             return
         self._is_hovered = value
 
+    def notify(self):
+        if self._dirty:
+            self.changed.emit()
+        self._dirty = False
+
     def paint_gl(self, window_size: QSize, camera: Camera, painter: QPainter) -> None:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
         painter.setPen(self.pen)
-        w, h = self.width / 2.0, self.height / 2.0
-        cp = (CanvasPos(-w, -h), CanvasPos(w, -h), CanvasPos(w, h), CanvasPos(-w, h))
+        cp = (
+            CanvasPos(self.left, self.top),
+            CanvasPos(self.right, self.top),
+            CanvasPos(self.right, self.bottom),
+            CanvasPos(self.left, self.bottom),
+        )
         ws = window_size
         scale = 0.5 * camera.zoom * ws.width()
         self.pen.setWidthF(3.0 / scale)
