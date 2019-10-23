@@ -1,9 +1,9 @@
 import enum
 
 from OpenGL import GL
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QSize, QObject
-from PyQt5.QtGui import QPainter, QPen, QColor
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt, QSize, QObject, QPointF
+from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath
 
 from schmereo import CanvasPos
 from schmereo.camera import Camera
@@ -29,7 +29,7 @@ class ClipBox(QObject):
         self.right = 0.5 * width
         self.top = -0.5 * height
         self.bottom = 0.5 * height
-        self.pen = QPen(QColor(0x40, 0x80, 0xFF, 0x90), 3)
+        self.pen = QPen(QColor(0x40, 0x90, 0xFF, 0x90), 3)
         self.pen.setStyle(Qt.DashLine)
         self.pen.setJoinStyle(Qt.RoundJoin)
         self._is_hovered = False
@@ -110,7 +110,13 @@ class ClipBox(QObject):
         painter.translate(0.5 * ws.width(), 0.5 * ws.height())
         painter.translate(-camera.center.x * scale, -camera.center.y * scale)
         painter.scale(scale, scale)
-        rectangle2 = QtCore.QRectF(
-            cp[0].x, cp[0].y, cp[1].x - cp[0].x, cp[3].y - cp[0].y
-        )
-        painter.drawRect(rectangle2)
+        x, y = cp[0].x, cp[0].y
+        w, h = cp[1].x - cp[0].x, cp[3].y - cp[0].y
+        rectangle = QtCore.QRectF(x, y, w, h)
+        painter.drawRect(rectangle)
+        outer_rect = QtCore.QRectF(x - 2, y - 2, w + 4, h + 4)
+        # darken everything beyond edge
+        outer1 = QPainterPath()
+        outer1.addRect(outer_rect)
+        outer1.addRect(rectangle)
+        painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x80))
