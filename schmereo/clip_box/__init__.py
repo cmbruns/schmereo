@@ -43,12 +43,16 @@ class ClipBox(QObject):
         self._dirty = True
         if edge & Edge.LEFT:
             self.left += d_pos.x
+            self.left = min(self.left, self.right)
         elif edge & Edge.RIGHT:
             self.right += d_pos.x
+            self.right = max(self.right, self.left)
         if edge & Edge.TOP:
             self.top += d_pos.y
+            self.top = min(self.top, self.bottom)
         elif edge & Edge.BOTTOM:
             self.bottom += d_pos.y
+            self.bottom = max(self.bottom, self.top)
 
     changed = QtCore.pyqtSignal()
 
