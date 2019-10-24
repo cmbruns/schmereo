@@ -32,10 +32,10 @@ def _make_cursor(file_name):
 
 
 class DragMode(enum.Enum):
-    NONE = 1,
-    PAN = 2,
-    CLIP_BOX = 3,
-    MARKER = 4,  # TODO:
+    NONE = 1
+    PAN = 2
+    CLIP_BOX = 3
+    MARKER = 4  # TODO:
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
@@ -72,6 +72,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.undo_stack = None
         #
         self.clip_box = ClipBox(parent=self)
+        self.clip_box_is_hovered = False
         self.painter = QtGui.QPainter()
 
     def add_marker(self, image_pos: ImagePixelCoordinate):
@@ -172,7 +173,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         cp = CanvasPos.from_WindowPos(wp, self.camera, self.size())
         if self.drag_mode != DragMode.NONE:
-            dPosC = cp - CanvasPos.from_WindowPos(self.previous_mouse, self.camera, self.size())
+            dPosC = cp - CanvasPos.from_WindowPos(
+                self.previous_mouse, self.camera, self.size()
+            )
             self.previous_mouse = wp
             # TODO: marker drage takes top priority
             # TODO: clip box drag takes second priority
@@ -183,11 +186,15 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
                 self.camera.center -= dPosC
                 self.camera.notify()  # update UI now
         else:  # just hovering, not dragging
-            self.clip_box_edge = self.clip_box.check_hover(cp, tolerance=20.0 / (self.size().width() * self.camera.zoom))
+            self.clip_box_edge = self.clip_box.check_hover(
+                cp, tolerance=20.0 / (self.size().width() * self.camera.zoom)
+            )
             if self.clip_box_edge == Edge.NONE:
+                is_hovered = False
                 self.setCursor(self.hover_cursor)
                 self.latent_drag_mode = DragMode.PAN
             else:
+                is_hovered = True
                 self.latent_drag_mode = DragMode.CLIP_BOX
                 if self.clip_box_edge in (Edge.TOP, Edge.BOTTOM):
                     self.setCursor(Qt.SizeVerCursor)
@@ -197,6 +204,9 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
                     self.setCursor(Qt.SizeFDiagCursor)
                 elif self.clip_box_edge in (Edge.TOP_RIGHT, Edge.BOTTOM_LEFT):
                     self.setCursor(Qt.SizeBDiagCursor)
+            if self.clip_box_is_hovered != is_hovered:
+                self.clip_box_is_hovered = is_hovered
+                self.update()
             #
             ip = self.image_from_window_qpoint(event.pos())
             self.messageSent.emit(f"Pixel: {ip.x: 0.1f}, {ip.y: 0.1f}", 3000)
@@ -289,15 +299,20 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.painter.endNativePainting()
         if img:
             assert self.painter.begin(self)
-            self.clip_box.paint_gl(window_size=self.size(), camera=self.camera, painter=self.painter)
+            self.clip_box.paint_gl(
+                window_size=self.size(),
+                camera=self.camera,
+                painter=self.painter,
+                hover=self.clip_box_is_hovered,
+            )
             self.painter.end()
 
     def resizeGL(self, width: int, height: int) -> None:
         self.aspect_ratio = height / width
 
     def to_dict(self):
-        return {'image': self.image.to_dict(), 'markers': self.markers.to_dict()}
+        return {"image": self.image.to_dict(), "markers": self.markers.to_dict()}
 
     def from_dict(self, data):
-        self.image.from_dict(data['image'])
-        self.markers.from_dict(data['markers'])
+        self.image.from_dict(data["image"])
+        self.markers.from_dict(data["markers"])

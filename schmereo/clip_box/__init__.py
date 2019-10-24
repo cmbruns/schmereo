@@ -77,22 +77,14 @@ class ClipBox(QObject):
         self.is_hovered = result != Edge.NONE
         return result
 
-    @property
-    def is_hovered(self) -> bool:
-        return self._is_hovered
-
-    @is_hovered.setter
-    def is_hovered(self, value: bool):
-        if value == self._is_hovered:
-            return
-        self._is_hovered = value
-
     def notify(self):
         if self._dirty:
             self.changed.emit()
         self._dirty = False
 
-    def paint_gl(self, window_size: QSize, camera: Camera, painter: QPainter) -> None:
+    def paint_gl(
+        self, window_size: QSize, camera: Camera, painter: QPainter, hover: bool
+    ) -> None:
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
         painter.setRenderHint(QPainter.HighQualityAntialiasing)
         painter.setPen(self.pen)
@@ -104,7 +96,12 @@ class ClipBox(QObject):
         )
         ws = window_size
         scale = 0.5 * camera.zoom * ws.width()
-        self.pen.setWidthF(3.0 / scale)
+        if hover:
+            self.pen.setWidthF(3.0 / scale)
+            self.pen.setColor(QColor(0x40, 0xA0, 0xFF, 0x90))
+        else:
+            self.pen.setWidthF(2.5 / scale)
+            self.pen.setColor(QColor(0x40, 0x90, 0xFF, 0x70))
         painter.setPen(self.pen)
         painter.resetTransform()
         painter.translate(0.5 * ws.width(), 0.5 * ws.height())
@@ -119,4 +116,7 @@ class ClipBox(QObject):
         outer1 = QPainterPath()
         outer1.addRect(outer_rect)
         outer1.addRect(rectangle)
-        painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x80))
+        if hover:
+            painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x50))
+        else:
+            painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x90))
