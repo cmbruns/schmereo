@@ -39,7 +39,7 @@ class DragMode(enum.Enum):
 
 
 class ImageWidget(QtWidgets.QOpenGLWidget):
-    def __init__(self, parent=None, camera=None, *args, **kwargs):
+    def __init__(self, parent=None, camera: Camera = None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
         if camera is None:
             camera = Camera()
