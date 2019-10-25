@@ -149,5 +149,12 @@ class ClipBox(QObject):
             cpc += dcp
             fpc = FractionalImagePos.from_CanvasPos(cpc, img.transform)
             img.transform.center = fpc
-        self.notify()
-        self.camera.notify()
+
+    def to_dict(self):
+        return {"left": self.left, "right": self.right, "top": self.top, "bottom": self.bottom}
+
+    def from_dict(self, data):
+        self.left = data["left"]
+        self.right = data["right"]
+        self.top = data["top"]
+        self.bottom = data["bottom"]

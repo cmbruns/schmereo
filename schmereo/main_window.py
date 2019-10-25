@@ -104,7 +104,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, redo_action)
         self.ui.menuEdit.insertSeparator(self.ui.actionAlign_Now)
         self.clip_box = ClipBox(parent=self, camera=self.shared_camera, images=[i.image for i in self.eye_widgets()])
-        self.ui.actionResolve_Clip_Box.triggered.connect(self.clip_box.recenter)
+        self.ui.actionResolve_Clip_Box.triggered.connect(self.recenter_clip_box)
         for w in self.eye_widgets():
             w.undo_stack = self.undo_stack
             w.clip_box = self.clip_box
@@ -243,21 +243,30 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionZoom_Out_triggered(self):
         self.zoom(amount=1.0 / self.zoom_increment)
 
+    def recenter_clip_box(self):
+        self.clip_box.recenter()
+        self.clip_box.notify()
+        self.camera.notify()
+
     def save_project_file(self, file_name):
         with open(file_name, "w") as fh:
             json.dump(self.to_dict(), fh, indent=2)
         self.recent_files.add_file(file_name)
 
     def to_dict(self):
+        self.clip_box.recenter()  # Normalize values before serialization
         return {
             "app": {"name": "schmereo", "version": __version__},
             "left": self.ui.leftImageWidget.to_dict(),
             "right": self.ui.rightImageWidget.to_dict(),
+            "clip_box": self.clip_box.to_dict(),
         }
 
     def from_dict(self, data):
         self.ui.leftImageWidget.from_dict(data["left"])
         self.ui.rightImageWidget.from_dict(data["right"])
+        if "clip_box" in data:
+            self.clip_box.from_dict(data["clip_box"])
 
     @QtCore.pyqtSlot()
     def zoom(self, amount: float):
