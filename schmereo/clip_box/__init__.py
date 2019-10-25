@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath
 
 from schmereo import CanvasPos
 from schmereo.camera import Camera
+from schmereo.coord_sys import FractionalImagePos
 
 
 class Edge(enum.IntFlag):
@@ -23,8 +24,10 @@ class Edge(enum.IntFlag):
 
 
 class ClipBox(QObject):
-    def __init__(self, width=1.0, height=1.0, parent=None):
+    def __init__(self, camera: Camera, images, width=1.0, height=1.0, parent=None):
         super().__init__(parent=parent)
+        self.camera = camera
+        self.images = images
         self.left = -0.5 * width
         self.right = 0.5 * width
         self.top = -0.5 * height
@@ -124,3 +127,27 @@ class ClipBox(QObject):
             painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x50))
         else:
             painter.fillPath(outer1, QColor(0x20, 0x40, 0x80, 0x90))
+
+    def recenter(self):
+        center_x = 0.5 * (self.right + self.left)
+        center_y = 0.5 * (self.bottom + self.top)
+        if center_x == 0 and center_y == 0:
+            return
+        self._dirty = True
+        # 1) change clip box
+        self.right -= center_x
+        self.left = -self.right
+        self.top -= center_y
+        self.bottom = -self.top
+        # 2) change camera(s)
+        dcp = CanvasPos(center_x, center_y)
+        self.camera.center -= CanvasPos(center_x, center_y)
+        # 3) change image center(s)
+        for img in self.images:
+            fpc = img.transform.center
+            cpc = CanvasPos.from_FractionalImagePos(fpc, img.transform)
+            cpc += dcp
+            fpc = FractionalImagePos.from_CanvasPos(cpc, img.transform)
+            img.transform.center = fpc
+        self.notify()
+        self.camera.notify()

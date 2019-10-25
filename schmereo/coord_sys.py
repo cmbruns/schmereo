@@ -91,6 +91,18 @@ class CanvasPos(PosBase):
     """
 
     @classmethod
+    def from_FractionalImagePos(cls, pos: "FractionalImagePos", transform: "ImageTransform"):
+        x, y = pos
+        x -= transform.center.x
+        y -= transform.center.y
+        cr = math.cos(transform.rotation)
+        sr = math.sin(transform.rotation)
+        rot = numpy.array(((cr, -sr), (sr, cr)), dtype=numpy.float32)
+        x, y = rot @ [x, y]
+        # TODO: scale
+        return CanvasPos(x, y)
+
+    @classmethod
     def from_WindowPos(
         cls, pos: WindowPos, camera: "schmereo.Camera", size: QtCore.QSize
     ) -> "CanvasPos":
@@ -132,7 +144,7 @@ class FractionalImagePos(PosBase):
         x, y = rot @ pos[:]
         x += transform.center.x
         y += transform.center.y
-        # TODO: rotation, scale
+        # TODO: scale
         return FractionalImagePos(x, y)
 
     @classmethod

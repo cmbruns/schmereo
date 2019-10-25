@@ -103,11 +103,12 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, undo_action)
         self.ui.menuEdit.insertAction(self.ui.actionAlign_Now, redo_action)
         self.ui.menuEdit.insertSeparator(self.ui.actionAlign_Now)
-        clip_box = ClipBox(parent=self)
+        self.clip_box = ClipBox(parent=self, camera=self.shared_camera, images=[i.image for i in self.eye_widgets()])
+        self.ui.actionResolve_Clip_Box.triggered.connect(self.clip_box.recenter)
         for w in self.eye_widgets():
             w.undo_stack = self.undo_stack
-            w.clip_box = clip_box
-            clip_box.changed.connect(w.update)
+            w.clip_box = self.clip_box
+            self.clip_box.changed.connect(w.update)
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):

@@ -257,6 +257,8 @@
     </property>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionResolve_Clip_Box"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -378,6 +380,11 @@
   <action name="actionnerp_2">
    <property name="text">
     <string>nerp</string>
+   </property>
+  </action>
+  <action name="actionResolve_Clip_Box">
+   <property name="text">
+    <string>Resolve Clip Box</string>
    </property>
   </action>
  </widget>

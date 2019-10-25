@@ -71,7 +71,7 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.image.messageSent.connect(self.messageSent)
         self.undo_stack = None
         #
-        self.clip_box = ClipBox(parent=self)
+        self.clip_box = None
         self.clip_box_is_hovered = False
         self.painter = QtGui.QPainter()
 
