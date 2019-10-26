@@ -234,6 +234,7 @@
       <string>Recent Files</string>
      </property>
     </widget>
+    <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="menuRecent_Files"/>
     <addaction name="separator"/>
@@ -385,6 +386,11 @@
   <action name="actionResolve_Clip_Box">
    <property name="text">
     <string>Resolve Clip Box</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
    </property>
   </action>
  </widget>

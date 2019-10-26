@@ -182,7 +182,7 @@ class ImageTransform(object):
 
     def __init__(self):
         self.center = FractionalImagePos(0, 0)
-        self.rotation = math.radians(0.0)  # radians
+        self.rotation = 0.0  # radians
 
     def to_dict(self, image):
         ipc = ImagePixelCoordinate.from_FractionalImagePos(self.center, image.size())
@@ -194,6 +194,9 @@ class ImageTransform(object):
         self.center = FractionalImagePos.from_ImagePixelCoordinate(ipc, image.size())
         self.rotation = math.radians(data.get("rotation", 0))
 
+    def reset(self):
+        self.center = FractionalImagePos(0, 0)
+        self.rotation = 0.0
 
 def fractionalImagePos_from_ImagePixelCoordinate(
     pos: "ImagePixelCoordinate", image_size

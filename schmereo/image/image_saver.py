@@ -53,7 +53,6 @@ class EyeSaver(object):
 
     def render_image(self, fb_size, camera):
         self.gl_widget.makeCurrent()
-        # TODO: recreate if size changed
         if self.framebuffer is None:
             self.fb_size = fb_size
             self.framebuffer = self._create_framebuffer()
@@ -61,7 +60,11 @@ class EyeSaver(object):
         w, h = fb_size[0], fb_size[1]
         GL.glViewport(0, 0, w, h)
         aspect = h / w
+        old_zoom = camera.zoom
+        img = self.gl_widget.image.image
+        camera.zoom = img.width / w
         self.gl_widget.image.paintGL(aspect, camera)
+        camera.zoom = old_zoom
         GL.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
         self.gl_widget.doneCurrent()
         self.fb_size = fb_size

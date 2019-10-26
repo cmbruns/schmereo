@@ -28,6 +28,11 @@ class Camera(QtCore.QObject):
             self.changed.emit()
         self._dirty = False
 
+    def reset(self):
+        self._zoom = 1.0
+        self._center = CanvasPos(0, 0)
+        self._dirty = True
+
     @property
     def zoom(self):
         return self._zoom
