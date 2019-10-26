@@ -7,7 +7,7 @@ import pkg_resources
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QCloseEvent
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QUndoStack, QMessageBox
 
@@ -118,12 +118,14 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def check_save(self) -> bool:
         if self.undo_stack.isClean():
             return True  # OK to do whatever now
-        alert = QMessageBox()
-        alert.setWindowTitle("Project is modified")
-        alert.setText("Do you want to save your changes?")
-        alert.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        alert.setDefaultButton(QMessageBox.Save)
-        result = alert.exec()
+        result = QMessageBox.warning(
+            self,
+            "The project has been modified.",
+            "The project has been modified.\n"
+            "Do you want to save your changes?",
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Save,
+        )
         if result == QMessageBox.Save:
             if self.project_file_name is None:
                 return self.on_actionSave_Project_As_triggered()
@@ -135,6 +137,12 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
             return False
         else:  # Unexpected to get here?
             return False  # cancel / abort
+
+    def closeEvent(self, event: QCloseEvent):
+        if self.check_save():
+            event.accept()
+        else:
+            event.ignore()
 
     def eye_widgets(self):
         for w in (self.ui.leftImageWidget, self.ui.rightImageWidget):
@@ -244,7 +252,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionQuit_triggered(self):
-        QtCore.QCoreApplication.quit()
+        if self.check_save():
+            QtCore.QCoreApplication.quit()
 
     @QtCore.pyqtSlot()
     def on_actionReport_a_Problem_triggered(self):
