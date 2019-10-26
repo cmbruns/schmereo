@@ -257,9 +257,9 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         self.clip_box.recenter()  # Normalize values before serialization
         return {
             "app": {"name": "schmereo", "version": __version__},
+            "clip_box": self.clip_box.to_dict(),
             "left": self.ui.leftImageWidget.to_dict(),
             "right": self.ui.rightImageWidget.to_dict(),
-            "clip_box": self.clip_box.to_dict(),
         }
 
     def from_dict(self, data):

@@ -1,4 +1,5 @@
 import enum
+import math
 
 from OpenGL import GL
 from PyQt5 import QtCore, QtGui
@@ -7,7 +8,7 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath
 
 from schmereo import CanvasPos
 from schmereo.camera import Camera
-from schmereo.coord_sys import FractionalImagePos
+from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate
 
 
 class Edge(enum.IntFlag):
@@ -60,6 +61,15 @@ class ClipBox(QObject):
     changed = QtCore.pyqtSignal()
 
     def check_hover(self, pos: CanvasPos, tolerance: float) -> Edge:
+        # Make sure we are in the general vicinity
+        if pos.x < self.left - tolerance:
+            return Edge.NONE
+        if pos.x > self.right + tolerance:
+            return Edge.NONE
+        if pos.y < self.top - tolerance:
+            return Edge.NONE
+        if pos.y > self.bottom + tolerance:
+            return Edge.NONE
         # Vertical
         v_edge = Edge.NONE
         dtop = abs(self.top - pos.y)
@@ -150,11 +160,43 @@ class ClipBox(QObject):
             fpc = FractionalImagePos.from_CanvasPos(cpc, img.transform)
             img.transform.center = fpc
 
+    @property
+    def size(self) -> ImagePixelCoordinate:
+        cp1 = CanvasPos(self.left, self.top)
+        cp2 = CanvasPos(self.right, self.bottom)
+        xform = self.images[0].transform
+        img_size = self.images[0].size()
+        fips = [FractionalImagePos.from_CanvasPos(pos, xform) for pos in (cp1, cp2)]
+        ipcs = [ImagePixelCoordinate.from_FractionalImagePos(pos, img_size) for pos in fips]
+        width = int(round(abs(ipcs[1].x - ipcs[0].x)) + 0.1)
+        height = int(round(abs(ipcs[1].y - ipcs[0].y)) + 0.1)
+        return ImagePixelCoordinate(width, height)
+
+    @size.setter
+    def size(self, value: ImagePixelCoordinate):
+        ipc2 = ImagePixelCoordinate(0, 0)
+        img_size = self.images[0].size()
+        fips = [FractionalImagePos.from_ImagePixelCoordinate(pos, img_size) for pos in (value, ipc2)]
+        xform = self.images[0].transform
+        cps = [CanvasPos.from_FractionalImagePos(pos, xform) for pos in fips]
+        width = abs(cps[1].x - cps[0].x)
+        height = abs(cps[1].y - cps[0].y)
+        self.right = 0.5 * width
+        self.left = -self.right
+        self.bottom = 0.5 * height
+        self.top = -self.bottom
+
     def to_dict(self):
-        return {"left": self.left, "right": self.right, "top": self.top, "bottom": self.bottom}
+        w, h = self.size
+        return {"width": int(w), "height": int(h)}
 
     def from_dict(self, data):
-        self.left = data["left"]
-        self.right = data["right"]
-        self.top = data["top"]
-        self.bottom = data["bottom"]
+        if "left" in data:
+            self.left = data["left"]
+            self.right = data["right"]
+            self.top = data["top"]
+            self.bottom = data["bottom"]
+        else:
+            w, h = data["width"], data["height"]
+            self.size = ImagePixelCoordinate(w, h)
+        print(self.size)
