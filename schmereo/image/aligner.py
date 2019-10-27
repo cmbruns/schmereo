@@ -96,30 +96,46 @@ class Aligner(object):
         cm = min(len(lm), len(rm))
         if cm < 1:
             return
-        # TODO: apply existing rotation before computing new rotation and center
-        angle = self._compute_rotation(lm[:cm], rm[:cm])
-        old_angle = lwidg.image.transform.rotation - rwidg.image.transform.rotation
-        d_angle = angle - old_angle
-        print(f"total rotation = {math.degrees(d_angle) : 0.2f}\N{DEGREE SIGN}")
+        # Convert to current canvas coordinates
+        lc = [lwidg.x_canvas_from_image(ImagePixelCoordinate(*x)) for x in lm]
+        rc = [rwidg.x_canvas_from_image(ImagePixelCoordinate(*x)) for x in rm]
+        # Compute rotation
+        d_angle = self._compute_rotation(lc[:cm], rc[:cm])
+        # print(f"total rotation = {math.degrees(d_angle) : 0.2f}\N{DEGREE SIGN}")
         lwidg.image.transform.rotation += d_angle/2.0
         rwidg.image.transform.rotation -= d_angle/2.0
+        # Recompute positions using updated rotation
+        lc = [lwidg.x_canvas_from_image(ImagePixelCoordinate(*x)) for x in lm]
+        rc = [rwidg.x_canvas_from_image(ImagePixelCoordinate(*x)) for x in rm]
+        d_angle = self._compute_rotation(lc[:cm], rc[:cm])
+        assert abs(math.degrees(d_angle)) < 0.05
         # Translation
-        c1 = self._compute_centroid(lm[:cm])
-        c2 = self._compute_centroid(rm[:cm])
-        dx, dy = c2 - c1  # TODO: translate extreme dx, not mean
-        print(dx, dy)
-        desired = self._compute_translation(lm[:cm], rm[:cm])
-        # convert current center difference to image pixels
-        c_c = CanvasPos(0, 0)  # center of image is canvas 0, 0
-        lc_i = lwidg.image_from_canvas(c_c)
-        rc_i = rwidg.image_from_canvas(c_c)
-        current = rc_i - lc_i
-        change = desired - current
-        # Apply half to each eye image
-        change2 = ImagePixelCoordinate(0.5 * change.x, 0.5 * change.y)
-        lc_i -= change2
-        lc_f = lwidg.fract_from_image(lc_i)
-        lwidg.image.transform.center = lc_f
-        rc_i += change2
-        rc_f = rwidg.fract_from_image(rc_i)
-        rwidg.image.transform.center = rc_f
+        # a) horizontal - use minimum separation
+        min_dh = None
+        for ix in range(cm):
+            dh = rc[ix].x - lc[ix].x
+            if min_dh is None or min_dh > dh:
+                min_dh = dh
+        if min_dh is None:
+            min_dh = 0
+        # b) vertical - use average separation
+        sum_v = 0.0
+        sum_weight = 0.0
+        for ix in range(cm):
+            dv = rc[ix].y - lc[ix].y
+            sum_v += dv
+            sum_weight += 1.0
+        if sum_weight <= 0.0:
+            avg_dv = 0.0
+        else:
+            avg_dv = sum_v / sum_weight
+        dh = [a - b for a, b in zip(rc[:cm], lc[:cm])]
+
+        new_center_c = CanvasPos(0.5 * min_dh, 0.5 * avg_dv)  # for left image (?)
+        old_center_c = CanvasPos(0, 0)
+        ldiff = [lwidg.x_fract_from_canvas(c) for c in (new_center_c, old_center_c)]
+        ldiff1 = ldiff[1] - ldiff[0]
+        lwidg.image.transform.center += ldiff1
+        rdiff = [rwidg.x_fract_from_canvas(c) for c in (old_center_c, new_center_c)]
+        rdiff1 = rdiff[1] - rdiff[0]
+        rwidg.image.transform.center += rdiff1

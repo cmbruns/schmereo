@@ -316,3 +316,12 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
     def from_dict(self, data):
         self.image.from_dict(data["image"])
         self.markers.from_dict(data["markers"])
+
+    def x_fract_from_canvas(self, pos: CanvasPos) -> FractionalImagePos:
+        return FractionalImagePos.from_CanvasPos(pos, self.image.transform)
+
+    def x_canvas_from_image(self, pos: ImagePixelCoordinate) -> CanvasPos:
+        f = self.fract_from_image(pos)
+        xform = self.image.transform
+        c = CanvasPos.from_FractionalImagePos(f, xform)
+        return c
