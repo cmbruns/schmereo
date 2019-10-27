@@ -288,6 +288,8 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         bs = self.clip_box.size
         self.image_saver.eye_size = (int(bs[0]), int(bs[1]))
         self.image_saver.save_image(file_name, file_type)
+        if self.project_folder is None:
+            self.project_folder = os.path.dirname(file_name)
 
     @QtCore.pyqtSlot()
     def on_actionSave_Project_As_triggered(self) -> bool:
@@ -335,6 +337,9 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
         with open(file_name, "w") as fh:
             json.dump(self.to_dict(), fh, indent=2)
             self.recent_files.add_file(file_name)
+            self.setWindowFilePath(file_name)
+            self.project_file_name = file_name
+            self.project_folder = os.path.dirname(file_name)
             self.undo_stack.setClean()
             return True
         return False
