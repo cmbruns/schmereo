@@ -38,6 +38,7 @@ class ClipBox(QObject):
         self.pen.setJoinStyle(Qt.RoundJoin)
         self._is_hovered = False
         self._dirty = False
+        self.press_state = None
 
     def adjust(self, edge: Edge, d_pos: CanvasPos):
         if Edge == Edge.NONE:
@@ -185,6 +186,28 @@ class ClipBox(QObject):
         self.left = -self.right
         self.bottom = 0.5 * height
         self.top = -self.bottom
+
+    @property
+    def state(self):
+        """Internal state used by AdjustClipBoxCommand"""
+        return {
+            "left": self.left,
+            "right": self.right,
+            "top": self.top,
+            "bottom": self.bottom,
+            "camera_center": (self.camera.center.x, self.camera.center.y),
+            "transforms": [i.transform.center[:] for i in self.images],
+        }
+
+    @state.setter
+    def state(self, data):
+        self.left = data["left"]
+        self.right = data["right"]
+        self.top = data["top"]
+        self.bottom = data["bottom"]
+        self.camera.center = CanvasPos(*data["camera_center"])
+        for i, img in enumerate(self.images):
+            img.transform.center = FractionalImagePos(*data["transforms"][i])
 
     def to_dict(self):
         w, h = self.size

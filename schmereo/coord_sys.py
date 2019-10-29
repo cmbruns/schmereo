@@ -32,6 +32,9 @@ class PosBase(object):
     def __getitem__(self, key) -> float:
         return self._pos[key]
 
+    def __len__(self):
+        return len(self._pos)
+
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.x}, {self.y})"
 

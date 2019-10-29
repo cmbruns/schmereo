@@ -212,6 +212,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_actionAlign_Now_triggered(self):
+        self.clip_box.recenter()
         self.undo_stack.push(AlignNowCommand(self))
 
     @QtCore.pyqtSlot()
@@ -264,12 +265,14 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
     def on_actionSave_triggered(self):
         if self.project_file_name is None:
             return
+        self.clip_box.recenter()
         self.save_project_file(self.project_file_name)
 
     @QtCore.pyqtSlot()
     def on_actionSave_Images_triggered(self):
         if not self.image_saver.can_save():
             return
+        self.clip_box.recenter()
         path = ""
         if self.project_file_name is not None:
             path = f"{os.path.splitext(self.project_file_name)[0]}.pns"
@@ -335,6 +338,7 @@ class SchmereoMainWindow(QtWidgets.QMainWindow):
 
     def save_project_file(self, file_name) -> bool:
         with open(file_name, "w") as fh:
+            self.clip_box.recenter()
             json.dump(self.to_dict(), fh, indent=2)
             self.recent_files.add_file(file_name)
             self.setWindowFilePath(file_name)

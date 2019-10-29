@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QUndoCommand
 
+from schmereo.clip_box import ClipBox
 from schmereo.coord_sys import ImagePixelCoordinate, FractionalImagePos
 from schmereo.image.aligner import Aligner
 
@@ -17,6 +18,27 @@ class AddMarkerCommand(QUndoCommand):
     def undo(self):
         del self.widget.markers[-1]
         self.widget.update()
+
+
+class AdjustClipBoxCommand(QUndoCommand):
+    def __init__(self, clip_box: ClipBox, old_state, new_state, parent=None):
+        super().__init__(parent)
+        self.setText("adjust size")
+        self.clip_box = clip_box
+        self.old_state = old_state
+        self.new_state = new_state
+
+    def redo(self):
+        self.clip_box.state = self.new_state
+        self.clip_box.recenter()
+        self.clip_box._dirty = True
+        self.clip_box.notify()
+
+    def undo(self):
+        self.clip_box.state = self.old_state
+        self.clip_box.recenter()
+        self.clip_box._dirty = True
+        self.clip_box.notify()
 
 
 class AlignNowCommand(QUndoCommand):

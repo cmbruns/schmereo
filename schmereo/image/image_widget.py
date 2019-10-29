@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt
 
 from schmereo.camera import Camera
 from schmereo.clip_box import ClipBox, Edge
-from schmereo.command import AddMarkerCommand
+from schmereo.command import AddMarkerCommand, AdjustClipBoxCommand
 from schmereo.coord_sys import (
     FractionalImagePos,
     WindowPos,
@@ -216,6 +216,8 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             return
         # drag detection
         self.drag_mode = self.latent_drag_mode
+        if self.drag_mode == DragMode.CLIP_BOX:
+            self.clip_box.press_state = self.clip_box.state
         wp = WindowPos.from_QPoint(event.pos())
         self.previous_mouse = wp
         # click detection
@@ -232,6 +234,11 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         if self.drag_cursor != self.hover_cursor:
             self.setCursor(self.hover_cursor)
         # drag detection
+        if self.drag_mode == DragMode.CLIP_BOX and self.clip_box.press_state is not None and self.clip_box.press_state != self.clip_box.state:
+            old_state = self.clip_box.press_state
+            new_state = self.clip_box.state
+            self.undo_stack.push(AdjustClipBoxCommand(self.clip_box, old_state, new_state))
+        self.clip_box.press_state = None
         self.drag_mode = DragMode.NONE
         self.previous_mouse = None
         # click detection
