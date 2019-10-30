@@ -16,6 +16,7 @@ setup(
         "schmereo = schmereo.__main__:main"
     ]},
     keywords="stereograph stereoscopic 3D restoration",
+    # TODO: "PyQt5" in install_requires makes the schmereo entry_point fail at runtime
     install_requires=["numpy", "pillow", "PyOpenGL", ],  # "PyQt5"],
     license="GPL",
     package_data={"": ["*.frag", "*.png", "*.ui", "*.vert"]},
