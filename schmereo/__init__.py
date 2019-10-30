@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 
 from schmereo.coord_sys import CanvasPos
 from schmereo.main_window import SchmereoMainWindow
