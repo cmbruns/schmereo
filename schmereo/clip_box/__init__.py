@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QSize, QObject, QPointF
 from PyQt5.QtGui import QPainter, QPen, QColor, QPainterPath
 
-from schmereo import CanvasPos
+from schmereo.coord_sys import CanvasPos
 from schmereo.camera import Camera
 from schmereo.coord_sys import FractionalImagePos, ImagePixelCoordinate
 

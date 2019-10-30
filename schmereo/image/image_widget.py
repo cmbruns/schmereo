@@ -290,7 +290,6 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
         self.camera.notify()
 
     def paintGL(self) -> None:
-        self.painter.beginNativePainting()
         self.image.paintGL(self.aspect_ratio)
         img = self.image.image
         if img:
@@ -303,7 +302,6 @@ class ImageWidget(QtWidgets.QOpenGLWidget):
             camera=self.camera,
             window_aspect=self.aspect_ratio,
         )
-        self.painter.endNativePainting()
         if img:
             assert self.painter.begin(self)
             self.clip_box.paint_gl(

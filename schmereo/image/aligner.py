@@ -2,8 +2,7 @@ import math
 import traceback
 from typing import List
 
-from schmereo import CanvasPos
-from schmereo.coord_sys import ImagePixelCoordinate
+from schmereo.coord_sys import CanvasPos, ImagePixelCoordinate
 
 
 class Aligner(object):

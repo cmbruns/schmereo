@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Load module version from ovr/version.py
 __version__ = "0.0.0"  # value will be replaced on the next line
@@ -8,16 +8,19 @@ exec(open("schmereo/version.py").read())
 
 setup(
     name="schmereo",
-    version=__version__,
     author="Christopher M. Bruns",
     author_email="cmbruns@rotatingpenguin.com",
     description="stereograph restoration application",
-    url="https://github.com/cmbruns/schmereo",
     download_url="https://github.com/cmbruns/schmereo/tarball/" + __version__,
-    packages=["schmereo"],
-    scripts=["scripts/schmereo_app.py", "scripts/split_stereo.py"],
+    entry_points={"console_scripts": [
+        "schmereo = schmereo.__main__:main"
+    ]},
     keywords="stereograph stereoscopic 3D restoration",
+    install_requires=["numpy", "pillow", "PyOpenGL", ],  # "PyQt5"],
     license="GPL",
-    install_requires=["numpy", "pillow", "PyOpenGL", "PyQt5"],
-    extras_require={},
+    package_data={"": ["*.frag", "*.png", "*.ui", "*.vert"]},
+    packages=find_packages(),
+    scripts=["scripts/split_stereo.py"],
+    url="https://github.com/cmbruns/schmereo",
+    version=__version__,
 )
